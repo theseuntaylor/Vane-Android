@@ -6,12 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,10 +37,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             VaneTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CityCard()
+                    val cities = listOf("London", "Birmingham", "Manchester", "Anfield")
+
+                    LazyColumn {
+                        itemsIndexed(cities){ _, city ->
+                            CityCard(name = city)
+                        }
+                    }
+
                 }
             }
         }
@@ -46,19 +58,24 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CityCard(modifier: Modifier = Modifier, name: String = "") {
 
-    var expanded by remember {
-        mutableStateOf(false)
-    }
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
+        shape = RoundedCornerShape(8.dp),
         onClick = {
             expanded = !expanded
         },
-        modifier = modifier.fillMaxWidth().padding(5.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
     ) {
         Column(
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(10.dp)
         ){
             Row(
+                modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -72,9 +89,10 @@ fun CityCard(modifier: Modifier = Modifier, name: String = "") {
             }
 
             if (expanded){
+                Spacer(modifier = modifier.height(5.dp))
                 // show additional details for the city.
                 // 1. Forecast for the rest of the week
-                // 2.
+                Text("This is a text that shows the expanded state of the card.")
             }
         }
     }
@@ -84,7 +102,7 @@ fun CityCard(modifier: Modifier = Modifier, name: String = "") {
 @Composable
 fun GreetingPreview() {
     VaneTheme {
-        for (i: Int in 1..5) {
+        for (i: Int in 0..3) {
             LazyColumn {
                 items(i) { CityCard(name = "City $i") }
             }
