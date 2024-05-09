@@ -29,15 +29,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.theme.VaneTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             VaneTheme {
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val cities = listOf("London", "Birmingham", "Manchester", "Anfield")
@@ -49,50 +52,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CityCard(modifier: Modifier = Modifier, name: String = "") {
-
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        shape = RoundedCornerShape(8.dp),
-        onClick = {
-            expanded = !expanded
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-    ) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ){
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = name,
-                    modifier = modifier
-                )
-                Text(
-                    text = "City Temperature",
-                    modifier = modifier
-                )
-            }
-
-            if (expanded){
-                Spacer(modifier = modifier.height(5.dp))
-                // show additional details for the city.
-                // 1. Forecast for the rest of the week
-                Text("This is a text that shows the expanded state of the card.")
             }
         }
     }
