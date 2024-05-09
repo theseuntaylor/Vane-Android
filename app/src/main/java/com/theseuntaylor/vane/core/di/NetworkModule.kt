@@ -1,6 +1,5 @@
 package com.theseuntaylor.vane.core.di
 
-import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -61,6 +60,8 @@ class NetworkModule {
         return builder(interceptor).cache(okHttpCache).build()
     }
 
+    @Provides
+    @Singleton
     fun provideOkHttpCache(@ApplicationContext context: Context): Cache = Cache(context.cacheDir, cacheSize)
 
     private fun builder(interceptor: Interceptor): OkHttpClient.Builder {
