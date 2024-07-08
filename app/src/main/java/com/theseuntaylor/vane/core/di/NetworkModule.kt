@@ -41,7 +41,7 @@ class NetworkModule {
             originalRequest
                 .newBuilder()
                 .cacheControl(
-                    CacheControl.Builder().maxAge(30, TimeUnit.MINUTES).build()
+                    CacheControl.Builder().maxAge(15, TimeUnit.MINUTES).build()
                 )
         } else {
             originalRequest
@@ -69,7 +69,11 @@ class NetworkModule {
             .readTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor())
+            .addInterceptor(
+                HttpLoggingInterceptor()
+                    .setLevel(HttpLoggingInterceptor.Level.BODY)
+                    .setLevel(HttpLoggingInterceptor.Level.HEADERS)
+            )
             .addInterceptor(interceptor)
     }
 

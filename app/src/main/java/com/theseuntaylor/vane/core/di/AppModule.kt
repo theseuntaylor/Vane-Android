@@ -17,7 +17,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    @Named(AppConstants.MAIN_DISPATCHER)
+    @Named(AppConstants.DEFAULT_DISPATCHER)
     fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
 
     @Singleton
@@ -28,7 +28,7 @@ class AppModule {
     @Provides
     @Singleton
     fun providesCoroutineScope(
-        @Named(AppConstants.MAIN_DISPATCHER) dispatcher: CoroutineDispatcher
+        @Named(AppConstants.DEFAULT_DISPATCHER) dispatcher: CoroutineDispatcher,
     ): CoroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
 
 }
