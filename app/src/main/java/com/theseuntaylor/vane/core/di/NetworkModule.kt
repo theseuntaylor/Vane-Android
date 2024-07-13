@@ -74,7 +74,7 @@ class NetworkModule {
                     .setLevel(HttpLoggingInterceptor.Level.BODY)
                     .setLevel(HttpLoggingInterceptor.Level.HEADERS)
             )
-            .addInterceptor(interceptor)
+        // .addNetworkInterceptor(interceptor)
     }
 
     @Provides

@@ -1,0 +1,66 @@
+
+/*
+*         if (
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+
+        ) {
+            com.theseuntaylor.vane.feature.home.ui.locationUpdate()
+        } else {
+            askPermissions(
+                context, REQUEST_LOCATION_PERMISSION, Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        }
+        * */
+
+
+/*lateinit var com.theseuntaylor.vane.feature.home.ui.getLocationCallback: LocationCallback
+        lateinit var com.theseuntaylor.vane.feature.home.ui.getLocationProvider: FusedLocationProviderClient
+
+        @OptIn(ExperimentalPermissionsApi::class)
+        @Composable
+        fun com.theseuntaylor.vane.feature.home.ui.getUserLocation(context: Context): LatAndLong {
+
+            val fineLocationPermissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+            val coarseLocationPermissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
+
+            val requestPermissionLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted ->
+                if (isGranted) {
+                    // Permission granted
+                } else {
+                    // Handle permission denial
+                }
+            }
+
+            com.theseuntaylor.vane.feature.home.ui.getLocationProvider = LocationServices.getFusedLocationProviderClient(context)
+            var currentLocation by remember { mutableStateOf(LatAndLong()) }
+
+            LaunchedEffect(key1 = com.theseuntaylor.vane.feature.home.ui.getLocationProvider) {
+                com.theseuntaylor.vane.feature.home.ui.getLocationCallback = object : LocationCallback() {
+                    override fun onLocationResult(result: LocationResult) {
+                        for (location in result.locations) {
+                            currentLocation = LatAndLong(location.latitude, location.longitude)
+                        }
+                    }
+                }
+            }
+            return currentLocation
+        }*/
+
+
+
+//        }
+//        if (
+//            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+//
+//        ) {
+//            com.theseuntaylor.vane.feature.home.ui.locationUpdate()
+//        } else {
+//            askPermissions(
+//                context, REQUEST_LOCATION_PERMISSION, Manifest.permission.ACCESS_FINE_LOCATION,
+//                Manifest.permission.ACCESS_COARSE_LOCATION
+//            )
+//        }
+//        //3

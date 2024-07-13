@@ -2,8 +2,8 @@ package com.theseuntaylor.vane.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.theseuntaylor.vane.core.local.FavouriteLocationsDao
 import com.theseuntaylor.vane.core.local.VaneDatabase
-import com.theseuntaylor.vane.core.local.WeatherCodeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,5 +27,6 @@ class DataModule {
     }
 
     @Provides
-    fun provideTaskDao(database: VaneDatabase): WeatherCodeDao = database.weatherCodeDao()
+    fun provideFavouriteLocationsDao(database: VaneDatabase): FavouriteLocationsDao =
+        database.favouriteLocationsDao()
 }
