@@ -28,7 +28,11 @@ class HomeViewModel @Inject constructor(
 
     // getWeatherForecastForCurrentLocation()
 
-    fun getWeatherForecastForCurrentLocation(longitude: Double, latitude: Double) =
+    fun getWeatherForecastForCurrentLocation(
+        longitude: Double,
+        latitude: Double,
+        currentLocation: String,
+    ) =
         viewModelScope.launch {
             weatherForecastUseCase.invokeWeatherForecast(
                 longitude = longitude,
@@ -40,7 +44,9 @@ class HomeViewModel @Inject constructor(
                         HomeUiState.Error(it.message ?: "There was an error loading forecasts")
                 }
                 .collect {
-                    _uiState.value = HomeUiState.Success(it.toUiModel())
+                    _uiState.value = HomeUiState.Success(
+                        it.toUiModel().copy(currentLocation = currentLocation)
+                    )
                 }
         }
 

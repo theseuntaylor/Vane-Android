@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
 import com.theseuntaylor.vane.core.theme.VaneTheme
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,14 +36,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
-                        floatingActionButton = {
-                            VaneFloatingActionButton {
-                                println("Floating Action Button Pressed")
-                            }
-                        },
-                        snackbarHost = {
-                            SnackbarHost(hostState = snackbarHostState)
-                        }
+                        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
                     ) { padding ->
                         Box(Modifier.padding(14.dp)) {
                             HomeScreen(

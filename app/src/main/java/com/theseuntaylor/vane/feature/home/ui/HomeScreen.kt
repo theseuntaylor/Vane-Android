@@ -13,6 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -26,22 +30,23 @@ import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.VaneSearchTextField
 import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
-    var currentAddress = ""
     var location: LatAndLong
+
+    var searchedAddress by remember { mutableStateOf("") }
 
     val requestPermissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
             onResult = { isGranted: Boolean ->
                 if (isGranted) {
-                    getCurrentLocation(context) { lat, long ->
+                    getCurrentLocation(context) { lat, long, time, currentLocation ->
                         location = LatAndLong(lat, long)
                     }
                 }
@@ -51,8 +56,11 @@ fun HomeScreen(
     Column {
 
         VaneSearchTextField(
-            value = viewModel.searchedLocation,
-            onValueChanged = viewModel::searchLocation
+            value = searchedAddress,
+            onValueChanged = { newSearchedAddress ->
+                searchedAddress = newSearchedAddress
+                searchLocation(context, searchedAddress = searchedAddress)
+            }
         )
         Box(modifier = Modifier.height(14.dp))
         Text(
@@ -75,11 +83,8 @@ fun HomeScreen(
                 val cities = listOf("London")
 
                 CityCard(
-                    name = currentAddress, uiModel = data
-                    // hourly = data.hourly, current = data.current
+                    name = data.currentLocation, uiModel = data
                 )
-
-
             }
 
             // Show error message and show a retry button.
@@ -93,12 +98,13 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         if (hasLocationPermission(context)) {
-            getCurrentLocation(context) { lat, long ->
+            getCurrentLocation(context) { lat, long, time, currentLocation ->
                 location = LatAndLong(lat, long)
 
                 viewModel.getWeatherForecastForCurrentLocation(
                     longitude = location.longitude,
-                    latitude = location.latitude
+                    latitude = location.latitude,
+                    currentLocation = currentLocation
                 )
             }
         } else {

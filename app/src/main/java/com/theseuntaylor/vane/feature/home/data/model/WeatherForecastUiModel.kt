@@ -10,6 +10,7 @@ data class WeatherForecastUiModel(
     val currentTemperature: Double = 0.0,
     val highestAndLowestTemperature: Pair<Double, Double> = Pair(0.0, 0.0),
     var summary: String = "",
+    var currentLocation: String = "",
     val current: Current = Current(),
 )
 
@@ -21,6 +22,7 @@ fun WeatherForecastResponse.toUiModel() = WeatherForecastUiModel(
         hourly.temperature_2m.max(),
         hourly.temperature_2m.min()
     ),
+    currentLocation = "",
     summary = WmoCodes.getByValue(current.weatherCode)?.info?.second
         ?: "Can\'t get the summary for your current location",
     current = current
