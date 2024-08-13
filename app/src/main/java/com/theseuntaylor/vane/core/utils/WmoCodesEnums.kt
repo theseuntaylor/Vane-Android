@@ -27,7 +27,6 @@ enum class WmoCodes(val info: Pair<Int, String>) {
     SLIGHT_THUNDERSTORM(Pair(95, "Slight or Moderate Thunderstorms")),
     THUNDERSTORM_WITH_HEAVY_HAIL(Pair(99, "Thunderstorm with Heavy Hail")),
     THUNDERSTORM_WITH_SLIGHT_HAIL(Pair(96, "Thunderstorm with Slight Hail"));
-    //    HEAVY_THUNDERSTORM(),
 
     companion object {
         fun getByValue(id: Int) = entries.firstOrNull { it.info.first == id }

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class VaneRepository @Inject constructor(
+class WeatherForecastRepository @Inject constructor(
     private val networkDataSource: RemoteDataSource,
 ) {
 

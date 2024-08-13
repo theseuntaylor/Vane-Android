@@ -18,9 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.theseuntaylor.vane.core.VaneAppState
 import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
 import com.theseuntaylor.vane.core.theme.VaneTheme
-import com.theseuntaylor.vane.feature.favouriteLocations.AddFavouriteLocation
+import com.theseuntaylor.vane.feature.favouriteLocations.ui.AddFavouriteLocationScreen
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
             VaneTheme {
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
+                val appState = VaneAppState(navController = navController)
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -41,9 +43,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         floatingActionButton = {
-                            VaneFloatingActionButton {
-                                println("Floating Action Button Pressed")
-                                navController.navigate("addLocation")
+                            if (appState.shouldShowFAB) {
+                                VaneFloatingActionButton {
+                                    println("Floating Action Button Pressed")
+                                    navController.navigate("addLocation")
+                                }
                             }
                         },
                         snackbarHost = {
@@ -64,7 +68,7 @@ class MainActivity : ComponentActivity() {
                                 composable(
                                     route = "addLocation"
                                 ) {
-                                    AddFavouriteLocation()
+                                    AddFavouriteLocationScreen()
                                 }
 
                             }

@@ -6,6 +6,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +50,9 @@ fun HomeScreen(
                 }
             })
 
+    val list = viewModel.favouriteLocations.collectAsState()
     val uiState = viewModel.uiState
+
     Column {
         Text(
             text = "Your Current Location", style = TextStyle(
@@ -70,6 +74,8 @@ fun HomeScreen(
                 CityCard(
                     name = data.currentLocation, uiModel = data
                 )
+
+                viewModel.getFavouriteLocations()
             }
 
             // Show retry button.
@@ -77,6 +83,14 @@ fun HomeScreen(
                 ShowErrorSnackBar(
                     message = state.errorMessage, snackbarHostState = snackBarHostState
                 )
+            }
+        }
+
+        if (list.value.isNotEmpty()) {
+            LazyColumn {
+                itemsIndexed(list.value) { index, savedLocation ->
+                    Text(text = "$index, ${savedLocation.id}, ${savedLocation.name}, ${savedLocation.latitude}, ${savedLocation.longitude}, ${savedLocation.isFavourite}")
+                }
             }
         }
     }
@@ -96,5 +110,6 @@ fun HomeScreen(
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
+    LaunchedEffect(list) {}
 
 }

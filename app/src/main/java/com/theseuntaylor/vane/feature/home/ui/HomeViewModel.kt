@@ -1,13 +1,12 @@
 package com.theseuntaylor.vane.feature.home.ui
 
 import android.annotation.SuppressLint
-import android.location.Address
 import android.location.Geocoder
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,8 +28,7 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Initial)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _listOfAddresses = MutableStateFlow<List<Address>>(emptyList())
-    val listOfAddresses = _listOfAddresses.asStateFlow()
+    var favouriteLocations = MutableStateFlow(emptyList<FavouriteLocationsEntity>())
 
     fun getWeatherForecastForCurrentLocation(
         longitude: Double,
@@ -67,7 +65,6 @@ class HomeViewModel @Inject constructor(
         )?.first()?.subAdminArea ?: "Error getting your current Location :("
     }
 
-
     @SuppressLint("MissingPermission")
     fun getCurrentLocation(callback: (Double, Double, String) -> Unit) {
         fusedLocationProviderClient.lastLocation
@@ -92,19 +89,17 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun searchLocation(searchedAddress: String) {
-        println("text entered is $searchedAddress")
-        if (Geocoder.isPresent()) {
-            geocoder.getFromLocationName(
-                searchedAddress,
-                5
-            ) { p0 ->
-                if (p0.isNotEmpty()) {
-                    _listOfAddresses.value = p0
+    fun getFavouriteLocations() {
+        viewModelScope.launch {
+            weatherForecastUseCase.invokeGetFavouriteLocations()
+                .onStart {
+                    Log.e("TAG", "Get favourite location stated!!!!")
                 }
-            }
+                .collect { it ->
+                    if (it.isNotEmpty()) {
+                        favouriteLocations.value = it
+                    }
+                }
         }
     }
-
 }

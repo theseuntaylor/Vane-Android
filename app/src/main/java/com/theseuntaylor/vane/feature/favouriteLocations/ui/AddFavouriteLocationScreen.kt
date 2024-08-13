@@ -1,4 +1,4 @@
-package com.theseuntaylor.vane.feature.favouriteLocations
+package com.theseuntaylor.vane.feature.favouriteLocations.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -27,13 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.theseuntaylor.vane.core.components.VaneSearchTextField
-import com.theseuntaylor.vane.feature.home.ui.HomeViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun AddFavouriteLocation(
+fun AddFavouriteLocationScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: FavouriteLocationViewModel = hiltViewModel(),
 ) {
 
     var searchedAddress: String by remember { mutableStateOf("") }
@@ -64,7 +63,7 @@ fun AddFavouriteLocation(
                     Card(
                         modifier = modifier.fillMaxWidth(),
                         onClick = {
-
+                            viewModel.saveNewFavouriteLocation(address = address)
                         }
                     ) {
                         Column(
