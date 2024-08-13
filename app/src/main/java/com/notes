@@ -50,6 +50,23 @@
         }*/
 
 
+//                    LazyRow {
+//                        // map it to ui data, then, we can handle return time in the data layer,
+//                        // instead of the ui layer :)
+//
+////                        items(hourly.time.size) { index ->
+////                            ForecastedWeatherChip(
+////                                hourlyTime = hourly.time[index].returnTime(),
+////                                hourlyTemperature = hourly.temperature_2m[index]
+////                            )
+////                        }
+//                    }
+
+                // show additional details for the city.
+                // 1. Forecast for the rest of the week
+                // Day - Mon Tues Wed Thur Fri Sat Sun
+                // Temp- 1   2    3   4    5   6   7
+
 
 //        }
 //        if (
@@ -64,3 +81,17 @@
 //            )
 //        }
 //        //3
+
+
+
+@Composable
+fun ForecastedWeatherChip(
+    hourlyTime: String, hourlyTemperature: Double,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = hourlyTime)
+        Text(text = hourlyTemperature.toString())
+    }
+}

@@ -15,8 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
 import com.theseuntaylor.vane.core.theme.VaneTheme
+import com.theseuntaylor.vane.feature.favouriteLocations.AddFavouriteLocation
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,12 +40,34 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
-                        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+                        floatingActionButton = {
+                            VaneFloatingActionButton {
+                                println("Floating Action Button Pressed")
+                                navController.navigate("addLocation")
+                            }
+                        },
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackbarHostState)
+                        }
                     ) { padding ->
                         Box(Modifier.padding(14.dp)) {
-                            HomeScreen(
-                                snackBarHostState = snackbarHostState
-                            )
+                            NavHost(
+                                navController = navController,
+                                startDestination = "home",
+                                modifier = Modifier
+                            ) {
+                                composable(
+                                    route = "home"
+                                ) {
+                                    HomeScreen(snackBarHostState = snackbarHostState)
+                                }
+                                composable(
+                                    route = "addLocation"
+                                ) {
+                                    AddFavouriteLocation()
+                                }
+
+                            }
                         }
                     }
 

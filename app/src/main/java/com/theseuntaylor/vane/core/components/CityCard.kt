@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,15 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.theseuntaylor.vane.core.utils.returnTime
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CityCard(
     modifier: Modifier = Modifier,
-    name: String = "Home City",
+    name: String,
     uiModel: WeatherForecastUiModel = WeatherForecastUiModel(),
 ) {
 
@@ -52,60 +52,35 @@ fun CityCard(
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = name,
-                    modifier = modifier
-                )
-                Text(
-                    text = "${uiModel.current.temperature_2m}°C",
-                    modifier = modifier
-                )
-            }
-
-            if (expanded) {
-                Spacer(modifier = modifier.height(5.dp))
-                // show additional details for the city.
-                // 1. Forecast for the rest of the week
-                // Day - Mon Tues Wed Thur Fri Sat Sun
-                // Temp- 1   2    3   4    5   6   7
                 Column {
-                    Text(current.time)
-                    Text("${current.interval}")
-                    Text("${current.wind_speed_10m}")
-                    Text("${current.wind_speed_10m}")
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(current.time.returnTime())
+
                     Text(uiModel.summary)
-//                    LazyRow {
-//                        // map it to ui data, then, we can handle return time in the data layer,
-//                        // instead of the ui layer :)
-//
-////                        items(hourly.time.size) { index ->
-////                            ForecastedWeatherChip(
-////                                hourlyTime = hourly.time[index].returnTime(),
-////                                hourlyTemperature = hourly.temperature_2m[index]
-////                            )
-////                        }
-//                    }
 
                 }
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "${uiModel.current.temperature_2m}°C",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(
+                        "${uiModel.highestAndLowestTemperature.second} " +
+                                "-" +
+                                " ${uiModel.highestAndLowestTemperature.first}"
+                    )
+                }
+            }
+
+            if (!expanded) {
+                Spacer(modifier = modifier.height(5.dp))
+                Column {}
             }
         }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun String.returnTime(): String {
-    val parsedDate = LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
-    return parsedDate.format(DateTimeFormatter.ofPattern("HH:mm"))
-}
-
-@Composable
-fun ForecastedWeatherChip(
-    hourlyTime: String, hourlyTemperature: Double,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = hourlyTime)
-        Text(text = hourlyTemperature.toString())
     }
 }
