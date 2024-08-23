@@ -50,7 +50,7 @@ fun HomeScreen(
                 }
             })
 
-    val list = viewModel.favouriteLocations.collectAsState()
+    val favouriteLocations = viewModel.favouriteLocations.collectAsState().value
     val uiState = viewModel.uiState
 
     Column {
@@ -62,9 +62,7 @@ fun HomeScreen(
         )
         when (val state = uiState.collectAsState().value) {
 
-            is HomeUiState.Initial -> {}
-
-            is HomeUiState.Loading -> {
+            is HomeUiState.Initial, HomeUiState.Loading -> {
                 Loader()
             }
 
@@ -86,9 +84,22 @@ fun HomeScreen(
             }
         }
 
-        if (list.value.isNotEmpty()) {
+        if (favouriteLocations.isNotEmpty()) {
+            var longitudeString = ""
+            var latitudeString = ""
+
+            for (favouriteLocation in favouriteLocations) {
+                longitudeString += "${favouriteLocation.longitude},"
+                latitudeString += "${favouriteLocation.latitude},"
+            }
+            viewModel.getWeatherForecastForFavouriteLocations(
+                longitude = longitudeString,
+                latitude = latitudeString,
+                currentLocation = "currentLocation"
+            )
+            // viewModel.get
             LazyColumn {
-                itemsIndexed(list.value) { index, savedLocation ->
+                itemsIndexed(favouriteLocations) { index, savedLocation ->
                     Text(text = "$index, ${savedLocation.id}, ${savedLocation.name}, ${savedLocation.latitude}, ${savedLocation.longitude}, ${savedLocation.isFavourite}")
                 }
             }
@@ -110,6 +121,8 @@ fun HomeScreen(
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
-    LaunchedEffect(list) {}
+
+    // once list is updated, make network call for favourite locations.
+    LaunchedEffect(favouriteLocations) {}
 
 }

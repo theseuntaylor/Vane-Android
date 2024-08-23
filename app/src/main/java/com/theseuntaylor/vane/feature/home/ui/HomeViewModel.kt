@@ -37,10 +37,33 @@ class HomeViewModel @Inject constructor(
     ) =
         viewModelScope.launch {
             weatherForecastUseCase.invokeWeatherForecast(
+                longitude = longitude.toString(),
+                latitude = latitude.toString(),
+            )
+                .onStart { _uiState.value = HomeUiState.Loading }
+                .catch {
+                    _uiState.value =
+                        HomeUiState.Error(it.message ?: "There was an error loading forecasts")
+                }
+                .collect {
+                    _uiState.value = HomeUiState.Success(
+                        it.toUiModel().copy(currentLocation = currentLocation)
+                    )
+                }
+        }
+
+    fun getWeatherForecastForFavouriteLocations(
+        longitude: String,
+        latitude: String,
+        currentLocation: String,
+    ) =
+        viewModelScope.launch {
+            weatherForecastUseCase.invokeWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
             )
-                .onStart { _uiState.value = HomeUiState.Loading }
+                // new ui state for favourite details.=
+                .onStart { _uiState.value = FavouritesUiState.Loading }
                 .catch {
                     _uiState.value =
                         HomeUiState.Error(it.message ?: "There was an error loading forecasts")

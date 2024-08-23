@@ -11,15 +11,15 @@ class WeatherForecastRepository @Inject constructor(
 ) {
 
     suspend fun getWeatherForecast(
-        longitude: Double,
-        latitude: Double,
+        longitude: String,
+        latitude: String,
     ): Flow<WeatherForecastResponse> = flow {
         try {
-            val remotePhotos = networkDataSource.getWeatherForecast(
-                longitude = longitude,
-                latitude = latitude,
+            val weatherForecastResponse = networkDataSource.getWeatherForecast(
+                longitude = longitude.toString(),
+                latitude = latitude.toString(),
             )
-            emit(value = remotePhotos)
+            emit(value = weatherForecastResponse)
         } catch (e: Exception) {
             e.localizedMessage
             throw e
