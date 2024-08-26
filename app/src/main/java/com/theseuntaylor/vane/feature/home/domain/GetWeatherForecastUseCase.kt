@@ -17,9 +17,17 @@ class GetWeatherForecastUseCase @Inject constructor(
     @Named(AppConstants.DEFAULT_DISPATCHER) private val defaultDispatcher: CoroutineDispatcher,
 ) {
 
-    suspend fun invokeWeatherForecast(longitude: String, latitude: String) =
+    suspend fun invokeCurrentLocationWeatherForecast(longitude: Double, latitude: Double) =
         withContext(defaultDispatcher) {
             weatherForecastRepository.getWeatherForecast(
+                longitude = longitude,
+                latitude = latitude,
+            )
+        }
+
+    suspend fun invokeFavouriteLocationsWeatherForecast(longitude: String, latitude: String) =
+        withContext(defaultDispatcher) {
+            weatherForecastRepository.getFavouriteLocationsWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
             )

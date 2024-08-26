@@ -11,13 +11,29 @@ class WeatherForecastRepository @Inject constructor(
 ) {
 
     suspend fun getWeatherForecast(
-        longitude: String,
-        latitude: String,
+        longitude: Double,
+        latitude: Double,
     ): Flow<WeatherForecastResponse> = flow {
         try {
             val weatherForecastResponse = networkDataSource.getWeatherForecast(
-                longitude = longitude.toString(),
-                latitude = latitude.toString(),
+                longitude = longitude,
+                latitude = latitude,
+            )
+            emit(value = weatherForecastResponse)
+        } catch (e: Exception) {
+            e.localizedMessage
+            throw e
+        }
+    }
+
+    suspend fun getFavouriteLocationsWeatherForecast(
+        longitude: String,
+        latitude: String,
+    ): Flow<List<WeatherForecastResponse>> = flow {
+        try {
+            val weatherForecastResponse = networkDataSource.getFavouriteLocationsWeatherForecast(
+                longitude = longitude,
+                latitude = latitude,
             )
             emit(value = weatherForecastResponse)
         } catch (e: Exception) {

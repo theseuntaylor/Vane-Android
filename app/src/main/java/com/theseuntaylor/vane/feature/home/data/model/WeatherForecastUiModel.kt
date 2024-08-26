@@ -23,6 +23,7 @@ fun WeatherForecastResponse.toUiModel() = WeatherForecastUiModel(
         hourly.temperature_2m.min()
     ),
     currentLocation = "",
+    //TODO: use the conversion of WMO codes to get images of the weather conditions
     summary = WmoCodes.getByValue(current.weatherCode)?.info?.second
         ?: "Can\'t get the summary for your current location",
     current = current

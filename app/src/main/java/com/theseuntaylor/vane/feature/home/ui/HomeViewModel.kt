@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,7 +29,13 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Initial)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _favouriteUiState = MutableStateFlow<FavouritesUiState>(FavouritesUiState.Initial)
+    val favouriteUiState: StateFlow<FavouritesUiState> = _favouriteUiState.asStateFlow()
+
     var favouriteLocations = MutableStateFlow(emptyList<FavouriteLocationsEntity>())
+
+    private var longitudeString = MutableStateFlow("")
+    private var latitudeString = MutableStateFlow("")
 
     fun getWeatherForecastForCurrentLocation(
         longitude: Double,
@@ -36,9 +43,9 @@ class HomeViewModel @Inject constructor(
         currentLocation: String,
     ) =
         viewModelScope.launch {
-            weatherForecastUseCase.invokeWeatherForecast(
-                longitude = longitude.toString(),
-                latitude = latitude.toString(),
+            weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
+                longitude = longitude,
+                latitude = latitude,
             )
                 .onStart { _uiState.value = HomeUiState.Loading }
                 .catch {
@@ -52,31 +59,36 @@ class HomeViewModel @Inject constructor(
                 }
         }
 
-    fun getWeatherForecastForFavouriteLocations(
-        longitude: String,
-        latitude: String,
-        currentLocation: String,
-    ) =
+    fun getWeatherForecastForFavouriteLocations() =
         viewModelScope.launch {
-            weatherForecastUseCase.invokeWeatherForecast(
-                longitude = longitude,
-                latitude = latitude,
+
+            for (favouriteLocation in favouriteLocations.value) {
+                longitudeString.value += "${favouriteLocation.longitude},"
+                latitudeString.value += "${favouriteLocation.latitude},"
+            }
+
+            weatherForecastUseCase.invokeFavouriteLocationsWeatherForecast(
+                longitude = longitudeString.value,
+                latitude = latitudeString.value,
             )
-                // new ui state for favourite details.=
-                .onStart { _uiState.value = FavouritesUiState.Loading }
-                .catch {
-                    _uiState.value =
-                        HomeUiState.Error(it.message ?: "There was an error loading forecasts")
+
+                .onStart {
+                    _favouriteUiState.value = FavouritesUiState.Loading
                 }
-                .collect {
-                    _uiState.value = HomeUiState.Success(
-                        it.toUiModel().copy(currentLocation = currentLocation)
-                    )
+                .catch {
+                    _favouriteUiState.value =
+                        FavouritesUiState.Error(
+                            it.message ?: "There was an error loading forecasts"
+                        )
+                }
+                .map { response ->
+                    response.map { it.toUiModel() }
+                }
+                .collect { response ->
+                    _favouriteUiState.value = FavouritesUiState.Success(response)
                 }
         }
 
-    // forecast for favourite locations
-    // Check that there are favourite locations from the db
     private fun getLocationFromCoordinates(long: Double, lat: Double): String {
 
         if (!Geocoder.isPresent()) {
@@ -118,7 +130,7 @@ class HomeViewModel @Inject constructor(
                 .onStart {
                     Log.e("TAG", "Get favourite location stated!!!!")
                 }
-                .collect { it ->
+                .collect {
                     if (it.isNotEmpty()) {
                         favouriteLocations.value = it
                     }

@@ -16,8 +16,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.theseuntaylor.vane.core.utils.returnTime
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
@@ -46,34 +46,35 @@ fun CityCard(
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
+
             Row(
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(current.time.returnTime())
-
-                    Text(uiModel.summary)
-
-                }
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "${uiModel.current.temperature_2m}°C",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(
-                        "${uiModel.highestAndLowestTemperature.second} " +
-                                "-" +
-                                " ${uiModel.highestAndLowestTemperature.first}"
-                    )
-                }
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleLarge,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${uiModel.current.temperature_2m}°C",
+                    style = MaterialTheme.typography.titleLarge,
+                )
             }
+            Row(
+                modifier = modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(current.time.returnTime())
+
+                Text(
+                    "${uiModel.highestAndLowestTemperature.second} " +
+                            "-" +
+                            " ${uiModel.highestAndLowestTemperature.first}"
+                )
+            }
+            Text(uiModel.summary)
+
         }
     }
 }
