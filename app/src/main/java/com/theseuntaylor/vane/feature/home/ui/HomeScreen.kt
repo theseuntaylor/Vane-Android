@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -57,8 +58,30 @@ fun HomeScreen(
 
     val uiState = viewModel.uiState
 
-    val favouritesUiState = viewModel.favouriteUiState
-    val favouriteLocations = viewModel.favouriteLocations.collectAsState().value
+    val favouritesUiState by viewModel.favouriteUiState.collectAsState()
+    val favouriteLocations by viewModel.favouriteLocations.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (hasLocationPermission(context)) {
+            viewModel.getCurrentLocation { lat, long, currentLocation ->
+                location = LatAndLong(lat, long)
+
+                viewModel.getWeatherForecastForCurrentLocation(
+                    longitude = location.longitude,
+                    latitude = location.latitude,
+                    currentLocation = currentLocation
+                )
+            }
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    LaunchedEffect(favouriteLocations) {
+        if (favouriteLocations.isEmpty()) {
+            viewModel.getFavouriteLocations()
+        }
+    }
 
     Column {
 
@@ -83,11 +106,8 @@ fun HomeScreen(
                 )
 
                 Spacer(modifier = modifier.height(10.dp))
-
-                viewModel.getFavouriteLocations()
             }
 
-            // Show retry button.
             is HomeUiState.Error -> {
                 ShowErrorSnackBar(
                     message = state.errorMessage, snackbarHostState = snackBarHostState
@@ -102,7 +122,7 @@ fun HomeScreen(
             )
         )
 
-        when (val state = favouritesUiState.collectAsState().value) {
+        when (val state = favouritesUiState) {
 
             is FavouritesUiState.Initial, FavouritesUiState.Loading -> {
                 Loader()
@@ -114,6 +134,8 @@ fun HomeScreen(
                     itemsIndexed(weatherForecasts) { index, weatherForecast ->
                         CityCard(
                             name = favouriteLocations[index].name,
+                            // TODO navigate to a different screen and pass the data
+                            onCardItemClicked = {},
                             uiModel = weatherForecast
                         )
                     }
@@ -129,29 +151,4 @@ fun HomeScreen(
         }
 
     }
-
-    LaunchedEffect(Unit) {
-        if (hasLocationPermission(context)) {
-            viewModel.getCurrentLocation { lat, long, currentLocation ->
-                location = LatAndLong(lat, long)
-
-                viewModel.getWeatherForecastForCurrentLocation(
-                    longitude = location.longitude,
-                    latitude = location.latitude,
-                    currentLocation = currentLocation
-                )
-            }
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    LaunchedEffect(favouriteLocations) {
-        if (favouriteLocations.isNotEmpty()) {
-
-            viewModel.getWeatherForecastForFavouriteLocations()
-
-        }
-    }
-
 }

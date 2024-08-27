@@ -13,5 +13,6 @@ sealed class FavouritesUiState {
     data object Initial : FavouritesUiState()
     data object Loading : FavouritesUiState()
     data class Error(val errorMessage: String) : FavouritesUiState()
-    data class Success(val data: List<WeatherForecastUiModel>) : FavouritesUiState()
+    data class Success(val data: MutableList<WeatherForecastUiModel> = mutableListOf()) :
+        FavouritesUiState()
 }

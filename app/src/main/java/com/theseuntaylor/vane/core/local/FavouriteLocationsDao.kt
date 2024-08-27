@@ -7,7 +7,7 @@ import androidx.room.Query
 
 @Dao
 interface FavouriteLocationsDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFavouriteLocations(newLocation: FavouriteLocationsEntity)
 
     @Query("SELECT * FROM favouriteLocationsEntity")

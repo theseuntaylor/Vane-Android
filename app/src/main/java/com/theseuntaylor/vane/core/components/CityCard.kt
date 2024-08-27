@@ -12,10 +12,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -26,17 +22,14 @@ import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 @Composable
 fun CityCard(
     modifier: Modifier = Modifier,
+    onCardItemClicked: () -> Unit = {},
     name: String,
     uiModel: WeatherForecastUiModel = WeatherForecastUiModel(),
 ) {
-
-    var expanded by remember { mutableStateOf(true) }
     val current = uiModel.current
     Card(
         shape = RoundedCornerShape(8.dp),
-        onClick = {
-            expanded = !expanded
-        },
+        onClick = onCardItemClicked,
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 14.dp),
@@ -62,8 +55,7 @@ fun CityCard(
                 )
             }
             Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(current.time.returnTime())
 
@@ -74,7 +66,6 @@ fun CityCard(
                 )
             }
             Text(uiModel.summary)
-
         }
     }
 }

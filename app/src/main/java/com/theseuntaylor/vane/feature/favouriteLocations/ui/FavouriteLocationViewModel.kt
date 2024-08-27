@@ -24,7 +24,6 @@ class FavouriteLocationViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun searchLocation(searchedAddress: String) {
-        println("text entered is $searchedAddress")
         if (Geocoder.isPresent()) {
             geocoder.getFromLocationName(
                 searchedAddress,

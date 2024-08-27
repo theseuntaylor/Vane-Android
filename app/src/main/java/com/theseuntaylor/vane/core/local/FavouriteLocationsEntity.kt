@@ -2,10 +2,12 @@ package com.theseuntaylor.vane.core.local
 
 import android.location.Address
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "favouriteLocationsEntity"
+    tableName = "favouriteLocationsEntity",
+    indices = [Index(value = ["longitude", "latitude"], unique = true)]
 )
 
 data class FavouriteLocationsEntity(

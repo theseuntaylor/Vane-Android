@@ -32,65 +32,30 @@ class HomeViewModel @Inject constructor(
     private val _favouriteUiState = MutableStateFlow<FavouritesUiState>(FavouritesUiState.Initial)
     val favouriteUiState: StateFlow<FavouritesUiState> = _favouriteUiState.asStateFlow()
 
-    var favouriteLocations = MutableStateFlow(emptyList<FavouriteLocationsEntity>())
-
-    private var longitudeString = MutableStateFlow("")
-    private var latitudeString = MutableStateFlow("")
+    var favouriteLocations = MutableStateFlow(mutableListOf<FavouriteLocationsEntity>())
 
     fun getWeatherForecastForCurrentLocation(
         longitude: Double,
         latitude: Double,
         currentLocation: String,
-    ) =
-        viewModelScope.launch {
-            weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
-                longitude = longitude,
-                latitude = latitude,
-            )
-                .onStart { _uiState.value = HomeUiState.Loading }
-                .catch {
-                    _uiState.value =
-                        HomeUiState.Error(it.message ?: "There was an error loading forecasts")
-                }
-                .collect {
-                    _uiState.value = HomeUiState.Success(
-                        it.toUiModel().copy(currentLocation = currentLocation)
-                    )
-                }
-        }
-
-    fun getWeatherForecastForFavouriteLocations() =
-        viewModelScope.launch {
-
-            for (favouriteLocation in favouriteLocations.value) {
-                longitudeString.value += "${favouriteLocation.longitude},"
-                latitudeString.value += "${favouriteLocation.latitude},"
+    ) = viewModelScope.launch {
+        weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
+            longitude = longitude,
+            latitude = latitude,
+        )
+            .onStart { _uiState.value = HomeUiState.Loading }
+            .catch {
+                _uiState.value =
+                    HomeUiState.Error(it.message ?: "There was an error loading forecasts")
             }
-
-            weatherForecastUseCase.invokeFavouriteLocationsWeatherForecast(
-                longitude = longitudeString.value,
-                latitude = latitudeString.value,
-            )
-
-                .onStart {
-                    _favouriteUiState.value = FavouritesUiState.Loading
-                }
-                .catch {
-                    _favouriteUiState.value =
-                        FavouritesUiState.Error(
-                            it.message ?: "There was an error loading forecasts"
-                        )
-                }
-                .map { response ->
-                    response.map { it.toUiModel() }
-                }
-                .collect { response ->
-                    _favouriteUiState.value = FavouritesUiState.Success(response)
-                }
-        }
+            .collect {
+                _uiState.value = HomeUiState.Success(
+                    it.toUiModel().copy(currentLocation = currentLocation)
+                )
+            }
+    }
 
     private fun getLocationFromCoordinates(long: Double, lat: Double): String {
-
         if (!Geocoder.isPresent()) {
             return "Service not available for your device."
         }
@@ -128,13 +93,49 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations()
                 .onStart {
-                    Log.e("TAG", "Get favourite location stated!!!!")
+                    favouriteLocations.value.removeAll { true }
+                    Log.e("TAG", "Get favourite location started!!!!")
                 }
                 .collect {
                     if (it.isNotEmpty()) {
-                        favouriteLocations.value = it
+                        getWeatherForecastForFavouriteLocations(it)
+                        favouriteLocations.value = it.toMutableList()
+                    } else {
+                        _favouriteUiState.value =
+                            FavouritesUiState.Error("You do not have any saved locations currently.")
                     }
                 }
+        }
+    }
+
+    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>) {
+        var longitudeString = ""
+        var latitudeString = ""
+
+        viewModelScope.launch {
+
+            for (favouriteLocation in favouriteLocationsEntities) {
+                longitudeString += "${favouriteLocation.longitude},"
+                latitudeString += "${favouriteLocation.latitude},"
+            }
+
+            weatherForecastUseCase.invokeFavouriteLocationsWeatherForecast(
+                longitude = longitudeString,
+                latitude = latitudeString,
+            ).onStart {
+                _favouriteUiState.value = FavouritesUiState.Loading
+            }.catch {
+                _favouriteUiState.value =
+                    FavouritesUiState.Error(
+                        it.message ?: "There was an error loading forecasts"
+                    )
+            }.map { response ->
+                response.map { it.toUiModel() }
+            }.collect { response ->
+                _favouriteUiState.value = FavouritesUiState.Success(
+                    data = response.toMutableList()
+                )
+            }
         }
     }
 }
