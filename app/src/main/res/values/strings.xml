@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Vane</string>
+    <string name="search_for_a_location">Search for a location...</string>
+    <string name="add_another_location">Add Another Location</string>
+    <string name="search_results">Search Results</string>
+    <string name="latitude">Latitude: %1$s</string>
+    <string name="longitude">Longitude: %1$s</string>
 </resources>

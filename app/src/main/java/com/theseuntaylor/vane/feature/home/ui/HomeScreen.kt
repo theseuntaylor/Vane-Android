@@ -134,7 +134,7 @@ fun HomeScreen(
                     itemsIndexed(weatherForecasts) { index, weatherForecast ->
                         CityCard(
                             name = favouriteLocations[index].name,
-                            // TODO navigate to a different screen and pass the data
+                            // navigate to details screen and pass the data
                             onCardItemClicked = {},
                             uiModel = weatherForecast
                         )

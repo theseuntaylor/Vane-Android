@@ -27,7 +27,7 @@ class FavouriteLocationViewModel @Inject constructor(
         if (Geocoder.isPresent()) {
             geocoder.getFromLocationName(
                 searchedAddress,
-                5
+                10
             ) { p0 ->
                 if (p0.isNotEmpty()) {
                     _listOfAddresses.value = p0

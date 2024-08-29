@@ -20,12 +20,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.VaneSearchTextField
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -33,6 +36,7 @@ import com.theseuntaylor.vane.core.components.VaneSearchTextField
 fun AddFavouriteLocationScreen(
     modifier: Modifier = Modifier,
     viewModel: FavouriteLocationViewModel = hiltViewModel(),
+    navController: NavHostController,
 ) {
 
     var searchedAddress: String by remember { mutableStateOf("") }
@@ -40,11 +44,12 @@ fun AddFavouriteLocationScreen(
 
     Column {
         Text(
-            text = "Add Another Location", style = TextStyle(
+            text = stringResource(R.string.add_another_location), style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
         )
+        Box(modifier = Modifier.height(10.dp))
         VaneSearchTextField(
             value = searchedAddress,
             onValueChanged = { newSearchedAddress ->
@@ -59,6 +64,14 @@ fun AddFavouriteLocationScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                item {
+                    Text(
+                        text = stringResource(R.string.search_results), style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                    )
+                }
                 itemsIndexed(addresses) { _, address ->
                     Card(
                         modifier = modifier.fillMaxWidth(),
@@ -76,11 +89,11 @@ fun AddFavouriteLocationScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "Latitude: ${address.latitude}",
+                                text = stringResource(R.string.latitude, address.latitude),
                                 style = MaterialTheme.typography.labelSmall
                             )
                             Text(
-                                text = "Longitude: ${address.longitude}",
+                                text = stringResource(R.string.longitude, address.longitude),
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -89,4 +102,5 @@ fun AddFavouriteLocationScreen(
             }
         }
     }
+
 }

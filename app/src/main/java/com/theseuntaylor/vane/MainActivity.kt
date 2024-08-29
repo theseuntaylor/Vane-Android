@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.theseuntaylor.vane.core.VaneAppState
 import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
 import com.theseuntaylor.vane.core.theme.VaneTheme
+import com.theseuntaylor.vane.feature.detailsScreen.ui.DetailedWeatherForecastScreen
 import com.theseuntaylor.vane.feature.favouriteLocations.ui.AddFavouriteLocationScreen
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,7 +69,15 @@ class MainActivity : ComponentActivity() {
                                 composable(
                                     route = "addLocation"
                                 ) {
-                                    AddFavouriteLocationScreen()
+                                    AddFavouriteLocationScreen(navController = navController)
+                                }
+                                composable(
+                                    route = "detailedForecast"
+                                ) {
+                                    DetailedWeatherForecastScreen(
+                                        modifier = Modifier,
+                                        navController = navController
+                                    )
                                 }
 
                             }
