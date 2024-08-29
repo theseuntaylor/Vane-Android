@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.VaneSearchTextField
 
@@ -36,7 +36,7 @@ import com.theseuntaylor.vane.core.components.VaneSearchTextField
 fun AddFavouriteLocationScreen(
     modifier: Modifier = Modifier,
     viewModel: FavouriteLocationViewModel = hiltViewModel(),
-    navController: NavHostController,
+    navController: NavController,
 ) {
 
     var searchedAddress: String by remember { mutableStateOf("") }

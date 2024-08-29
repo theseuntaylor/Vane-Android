@@ -16,14 +16,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.theseuntaylor.vane.core.VaneAppState
+import com.theseuntaylor.vane.core.components.VaneAppBar
 import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
+import com.theseuntaylor.vane.core.navigation.Screen
+import com.theseuntaylor.vane.core.navigation.addLocationScreen
+import com.theseuntaylor.vane.core.navigation.detailedForecastScreen
+import com.theseuntaylor.vane.core.navigation.homeScreen
 import com.theseuntaylor.vane.core.theme.VaneTheme
-import com.theseuntaylor.vane.feature.detailsScreen.ui.DetailedWeatherForecastScreen
-import com.theseuntaylor.vane.feature.favouriteLocations.ui.AddFavouriteLocationScreen
-import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,19 +35,34 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VaneTheme {
+
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
                 val appState = VaneAppState(navController = navController)
 
+                val modifier = Modifier
+
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
+                        topBar = {
+                            if (appState.shouldShowActionBar) {
+                                VaneAppBar(
+                                    title = appState.currentDestination?.route ?: "",
+                                    navController = navController,
+                                    navigateBack = {
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.navigateUp()
+                                        }
+                                    }
+                                )
+                            }
+                        },
                         floatingActionButton = {
                             if (appState.shouldShowFAB) {
                                 VaneFloatingActionButton {
-                                    println("Floating Action Button Pressed")
                                     navController.navigate("addLocation")
                                 }
                             }
@@ -54,36 +70,29 @@ class MainActivity : ComponentActivity() {
                         snackbarHost = {
                             SnackbarHost(hostState = snackbarHostState)
                         }
-                    ) { padding ->
-                        Box(Modifier.padding(14.dp)) {
+                    ) { innerPaddingValue ->
+                        Box(
+                            modifier = modifier
+                                .padding(innerPaddingValue)
+                                .padding(12.dp)
+                        ) {
                             NavHost(
                                 navController = navController,
-                                startDestination = "home",
+                                startDestination = Screen.Home.route,
                                 modifier = Modifier
                             ) {
-                                composable(
-                                    route = "home"
-                                ) {
-                                    HomeScreen(snackBarHostState = snackbarHostState)
-                                }
-                                composable(
-                                    route = "addLocation"
-                                ) {
-                                    AddFavouriteLocationScreen(navController = navController)
-                                }
-                                composable(
-                                    route = "detailedForecast"
-                                ) {
-                                    DetailedWeatherForecastScreen(
-                                        modifier = Modifier,
-                                        navController = navController
-                                    )
-                                }
-
+                                homeScreen(
+                                    snackbarHostState,
+                                    navController = navController
+                                )
+                                addLocationScreen(navController = navController)
+                                detailedForecastScreen(
+                                    modifier = modifier,
+                                    navController = navController
+                                )
                             }
                         }
                     }
-
                 }
             }
         }
