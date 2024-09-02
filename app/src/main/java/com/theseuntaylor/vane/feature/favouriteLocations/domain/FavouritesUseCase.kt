@@ -1,7 +1,8 @@
-package com.theseuntaylor.vane.feature.favouriteLocations
+package com.theseuntaylor.vane.feature.favouriteLocations.domain
 
 import android.location.Address
 import com.theseuntaylor.vane.core.di.AppConstants
+import com.theseuntaylor.vane.feature.favouriteLocations.data.FavouriteLocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

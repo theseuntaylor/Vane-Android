@@ -10,7 +10,7 @@ class WeatherForecastRepository @Inject constructor(
     private val networkDataSource: RemoteDataSource,
 ) {
 
-    suspend fun getWeatherForecast(
+    fun getWeatherForecast(
         longitude: Double,
         latitude: Double,
     ): Flow<WeatherForecastResponse> = flow {
@@ -26,7 +26,7 @@ class WeatherForecastRepository @Inject constructor(
         }
     }
 
-    suspend fun getFavouriteLocationsWeatherForecast(
+    fun getFavouriteLocationsWeatherForecast(
         longitude: String,
         latitude: String,
     ): Flow<List<WeatherForecastResponse>> = flow {

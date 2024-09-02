@@ -1,4 +1,4 @@
-package com.theseuntaylor.vane.feature.favouriteLocations
+package com.theseuntaylor.vane.feature.favouriteLocations.data
 
 import android.location.Address
 import com.theseuntaylor.vane.core.local.FavouriteLocationsDao
@@ -9,9 +9,7 @@ class FavouriteLocationRepository @Inject constructor(
     private val locationsDao: FavouriteLocationsDao,
 ) {
     suspend fun addNewFavouriteLocation(address: Address) {
-
         val newLocation = address.toEntity()
-
         locationsDao.addFavouriteLocations(newLocation)
     }
 

@@ -14,7 +14,7 @@ import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 
 const val homeScreenRoute = "homeScreen"
 const val addLocationScreenRoute = "addLocation"
-const val detailedForecastScreenRoute = "detailedForecastScreen/{locationId}"
+const val detailedForecastScreenRoute = "detailedForecastScreen/{longitude}/{latitude}"
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.detailedForecastScreen(
@@ -22,11 +22,11 @@ fun NavGraphBuilder.detailedForecastScreen(
     navController: NavHostController
 ) {
     composable(
-        route = detailedForecastScreenRoute
+        route = detailedForecastScreenRoute,
     ) {
         DetailedWeatherForecastScreen(
             modifier = modifier,
-            navController = navController
+            navController = navController,
         )
     }
 }
@@ -47,10 +47,12 @@ fun NavGraphBuilder.homeScreen(snackbarHostState: SnackbarHostState, navControll
     ) {
         HomeScreen(
             snackBarHostState = snackbarHostState,
-            navigateToDetailedForecast = { locationId ->
+            navigateToDetailedForecast = { longitude, latitude, locationName ->
                 navController.navigate(
                     Screen.DetailedForecastScreen.createRoute(
-                        locationId = locationId
+                        locationName = locationName,
+                        longitude = longitude,
+                        latitude = latitude
                     )
                 )
             }

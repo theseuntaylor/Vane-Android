@@ -1,0 +1,3 @@
+package com.theseuntaylor.vane.feature.detailsScreen.ui
+
+class DetailedWeatherForecastUiState

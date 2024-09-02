@@ -2,7 +2,7 @@ package com.theseuntaylor.vane.feature.home.domain
 
 import com.theseuntaylor.vane.core.di.AppConstants
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
-import com.theseuntaylor.vane.feature.favouriteLocations.FavouriteLocationRepository
+import com.theseuntaylor.vane.feature.favouriteLocations.data.FavouriteLocationRepository
 import com.theseuntaylor.vane.feature.home.data.repository.WeatherForecastRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -33,7 +33,7 @@ class GetWeatherForecastUseCase @Inject constructor(
             )
         }
 
-    suspend fun invokeGetFavouriteLocations(): Flow<List<FavouriteLocationsEntity>> =
+    fun invokeGetFavouriteLocations(): Flow<List<FavouriteLocationsEntity>> =
         flow {
             val favouriteLocations = favouriteLocationRepository.getFavouriteLocations()
             emit(favouriteLocations)

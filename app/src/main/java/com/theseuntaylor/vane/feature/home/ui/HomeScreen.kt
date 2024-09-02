@@ -35,7 +35,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState,
-    navigateToDetailedForecast: (Int) -> Unit
+    navigateToDetailedForecast: (String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     var location: LatAndLong
@@ -137,7 +137,11 @@ fun HomeScreen(
                             name = favouriteLocations[index].name,
                             // navigate to details screen and pass the data
                             onCardItemClicked = {
-                                navigateToDetailedForecast(favouriteLocations[index].id)
+                                navigateToDetailedForecast(
+                                    weatherForecasts[index].location.first.toString(),
+                                    weatherForecasts[index].location.second.toString(),
+                                    favouriteLocations[index].name
+                                )
                             },
                             uiModel = weatherForecast
                         )

@@ -1,6 +1,5 @@
 package com.theseuntaylor.vane.core.navigation
 
-import android.util.Log
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -16,13 +15,20 @@ sealed class Screen(
 
     data object DetailedForecastScreen : Screen(
         route = detailedForecastScreenRoute,
-        navArguments = listOf(navArgument("locationId") {
-            type = NavType.IntType
-        })
+        navArguments = listOf(
+            navArgument("locationName") {
+                type = NavType.StringType
+            },
+            navArgument("longitude") {
+                type = NavType.StringType
+            },
+            navArgument("latitude") {
+                type = NavType.StringType
+            }
+        )
     ) {
-        fun createRoute(locationId: Int): String {
-            Log.e("Location ID", locationId.toString())
-            return "detailedForecastScreen/${locationId}"
+        fun createRoute(locationName: String, longitude: String, latitude: String): String {
+            return "detailedForecastScreen/$locationName/$longitude/$latitude"
         }
     }
 
