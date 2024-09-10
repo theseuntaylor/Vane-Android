@@ -26,4 +26,9 @@ data class WeatherForecastResponse(
     val hourlyUnits: HourlyUnits,
     @SerializedName("hourly")
     val hourly: Hourly,
+    @SerializedName("daily_units")
+    val dailyUnits: DailyUnits,
+    @SerializedName("daily")
+    val daily: Daily,
+    val currentLocation: String = ""
 )

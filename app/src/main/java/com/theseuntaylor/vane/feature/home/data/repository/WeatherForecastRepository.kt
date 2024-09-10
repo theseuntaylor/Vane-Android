@@ -13,11 +13,13 @@ class WeatherForecastRepository @Inject constructor(
     fun getWeatherForecast(
         longitude: Double,
         latitude: Double,
+        forecastDays: Int,
     ): Flow<WeatherForecastResponse> = flow {
         try {
             val weatherForecastResponse = networkDataSource.getWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
+                forecastDays = forecastDays
             )
             emit(value = weatherForecastResponse)
         } catch (e: Exception) {

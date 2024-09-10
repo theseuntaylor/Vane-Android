@@ -20,9 +20,6 @@ enum class ChildrenDestinations(
 ) {
     ADD_LOCATION(
         destinationRouteName = Screen.AddFavouriteLocation.route
-    ),
-    DETAILED_FORECAST_SCREEN(
-        destinationRouteName = Screen.DetailedForecastScreen.route
     )
 }
 

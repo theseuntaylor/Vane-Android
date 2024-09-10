@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                         topBar = {
                             if (appState.shouldShowActionBar) {
                                 VaneAppBar(
-                                    title = appState.currentDestination?.route ?: "",
+                                    title = appState.currentDestination?.route.toReadableName(),
                                     navController = navController,
                                     navigateBack = {
                                         if (navController.previousBackStackEntry != null) {
@@ -88,7 +88,8 @@ class MainActivity : ComponentActivity() {
                                 addLocationScreen(navController = navController)
                                 detailedForecastScreen(
                                     modifier = modifier,
-                                    navController = navController
+                                    navController = navController,
+                                    snackbarHostState = snackbarHostState
                                 )
                             }
                         }
@@ -96,5 +97,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+private fun String?.toReadableName(): String {
+    return when (this) {
+        "homeScreen" -> "Home"
+        "addLocation" -> "Add Location"
+        else -> ""
     }
 }

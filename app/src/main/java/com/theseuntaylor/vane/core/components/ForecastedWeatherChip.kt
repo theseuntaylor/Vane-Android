@@ -21,7 +21,7 @@ fun HourlyWeatherForecast(hourly: Hourly) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(hourly.time.size) { index ->
+        items(24) { index ->
             ForecastedWeatherChip(
                 hourlyTime = hourly.time[index].returnTime(),
                 hourlyTemperature = hourly.temperature_2m[index]
