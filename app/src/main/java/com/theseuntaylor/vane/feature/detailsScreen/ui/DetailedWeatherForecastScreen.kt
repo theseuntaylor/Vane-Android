@@ -24,6 +24,7 @@ import com.theseuntaylor.vane.core.components.Loader
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.VaneAppBar
 import com.theseuntaylor.vane.core.components.WeatherDetailChip
+import com.theseuntaylor.vane.core.navigation.DetailedForecast
 import com.theseuntaylor.vane.core.utils.returnTime
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -32,13 +33,13 @@ fun DetailedWeatherForecastScreen(
     modifier: Modifier,
     viewModel: DetailedWeatherForecastViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState,
-    navController: NavHostController
+    navController: NavHostController,
+    args: DetailedForecast
 ) {
 
-    val longitude = navController.currentBackStackEntry?.arguments?.getString("longitude")
-    val latitude = navController.currentBackStackEntry?.arguments?.getString("latitude")
-    val locationName =
-        navController.currentBackStackEntry?.arguments?.getString("location") ?: ""
+    val longitude = args.longitude
+    val latitude = args.latitude
+    val locationName = args.location
 
     Scaffold(
         topBar = {
@@ -213,7 +214,6 @@ fun DetailedWeatherForecastScreen(
             viewModel.getWeatherForecastForLocation(
                 longitude.toDouble(),
                 latitude.toDouble(),
-                currentLocation = locationName,
                 forecastDays = 7
             )
             // make call to db, to return the longitude and latitude, which we can use to make calls to get detailed information

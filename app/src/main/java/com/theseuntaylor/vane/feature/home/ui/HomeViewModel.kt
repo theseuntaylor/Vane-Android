@@ -93,7 +93,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations()
                 .onStart {
-                    favouriteLocations.value.removeAll { true }
+                    favouriteLocations.value.clear()
                     Log.e("TAG", "Get favourite location started!!!!")
                 }
                 .collect {

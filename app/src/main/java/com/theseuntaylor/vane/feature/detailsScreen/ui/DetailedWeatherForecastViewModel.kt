@@ -24,26 +24,21 @@ class DetailedWeatherForecastViewModel @Inject constructor(
     fun getWeatherForecastForLocation(
         longitude: Double,
         latitude: Double,
-        currentLocation: String,
         forecastDays: Int
     ) = viewModelScope.launch {
         weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
             longitude = longitude,
             latitude = latitude,
             forecastDays = forecastDays
-        )
-            .onStart { _uiState.value = DetailedWeatherForecastUiState.Loading }
-            .catch {
-                _uiState.value =
-                    DetailedWeatherForecastUiState.Error(
-                        it.message ?: "There was an error loading forecasts"
-                    )
-            }
-            .collect {
-                _uiState.value = DetailedWeatherForecastUiState.Success(
-                    it
-                )
-            }
+        ).onStart {
+            _uiState.value = DetailedWeatherForecastUiState.Loading
+        }.catch {
+            _uiState.value = DetailedWeatherForecastUiState.Error(
+                errorMessage = it.message ?: "There was an error loading forecasts"
+            )
+        }.collect {
+            _uiState.value = DetailedWeatherForecastUiState.Success(it)
+        }
     }
 
 }

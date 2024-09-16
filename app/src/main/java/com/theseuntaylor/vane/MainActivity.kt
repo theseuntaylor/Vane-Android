@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.theseuntaylor.vane.core.VaneAppState
-import com.theseuntaylor.vane.core.components.VaneAppBar
 import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
-import com.theseuntaylor.vane.core.navigation.Screen
+import com.theseuntaylor.vane.core.navigation.AddFavouriteLocation
+import com.theseuntaylor.vane.core.navigation.Home
 import com.theseuntaylor.vane.core.navigation.addLocationScreen
 import com.theseuntaylor.vane.core.navigation.detailedForecastScreen
 import com.theseuntaylor.vane.core.navigation.homeScreen
@@ -47,23 +47,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
-                        topBar = {
-                            if (appState.shouldShowActionBar) {
-                                VaneAppBar(
-                                    title = appState.currentDestination?.route.toReadableName(),
-                                    navController = navController,
-                                    navigateBack = {
-                                        if (navController.previousBackStackEntry != null) {
-                                            navController.navigateUp()
-                                        }
-                                    }
-                                )
-                            }
-                        },
                         floatingActionButton = {
                             if (appState.shouldShowFAB) {
                                 VaneFloatingActionButton {
-                                    navController.navigate("addLocation")
+                                    navController.navigate(AddFavouriteLocation)
                                 }
                             }
                         },
@@ -78,7 +65,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NavHost(
                                 navController = navController,
-                                startDestination = Screen.Home.route,
+                                startDestination = Home,
                                 modifier = Modifier
                             ) {
                                 homeScreen(

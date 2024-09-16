@@ -78,7 +78,7 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(favouriteLocations) {
+    LaunchedEffect(key1 = favouriteLocations, key2 = Unit) {
         if (favouriteLocations.isEmpty()) {
             viewModel.getFavouriteLocations()
         }
