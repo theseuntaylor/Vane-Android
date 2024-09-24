@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.Loader
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
@@ -59,8 +60,8 @@ fun HomeScreen(
 
     val uiState = viewModel.uiState
 
-    val favouritesUiState by viewModel.favouriteUiState.collectAsState()
-    val favouriteLocations by viewModel.favouriteLocations.collectAsState()
+    val favouritesUiState by viewModel.favouriteUiState.collectAsStateWithLifecycle()
+    val favouriteLocations by viewModel.favouriteLocations.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         if (hasLocationPermission(context)) {
