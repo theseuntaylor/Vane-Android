@@ -18,7 +18,7 @@ class GetWeatherForecastUseCase @Inject constructor(
 ) {
 
     suspend fun invokeCurrentLocationWeatherForecast(
-        longitude: Double, latitude: Double,
+        longitude: String, latitude: String,
         forecastDays: Int = 1
     ) =
         withContext(defaultDispatcher) {
@@ -29,11 +29,15 @@ class GetWeatherForecastUseCase @Inject constructor(
             )
         }
 
-    suspend fun invokeFavouriteLocationsWeatherForecast(longitude: String, latitude: String) =
+    suspend fun invokeFavouriteLocationsWeatherForecast(
+        longitude: String, latitude: String,
+        forecastDays: Int = 7
+    ) =
         withContext(defaultDispatcher) {
             weatherForecastRepository.getFavouriteLocationsWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
+                forecastDays = forecastDays
             )
         }
 

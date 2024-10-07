@@ -1,9 +1,6 @@
 package com.theseuntaylor.vane.feature.home.ui
 
-import android.Manifest
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,8 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.Loader
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
-import com.theseuntaylor.vane.core.utils.hasLocationPermission
-import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
+import com.theseuntaylor.vane.core.navigation.DetailedForecast
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -36,48 +31,13 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState,
-    navigateToDetailedForecast: (String, String, String) -> Unit
+    navigateToDetailedForecast: (DetailedForecast) -> Unit
 ) {
-    val context = LocalContext.current
-    var location: LatAndLong
-
-    val requestPermissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { isGranted: Boolean ->
-                if (isGranted) {
-                    viewModel.getCurrentLocation { lat, long, currentLocation ->
-                        location = LatAndLong(lat, long)
-
-                        viewModel.getWeatherForecastForCurrentLocation(
-                            longitude = location.longitude,
-                            latitude = location.latitude,
-                            currentLocation = currentLocation
-                        )
-                    }
-                }
-            })
 
     val uiState = viewModel.uiState
 
     val favouritesUiState by viewModel.favouriteUiState.collectAsStateWithLifecycle()
     val favouriteLocations by viewModel.favouriteLocations.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        if (hasLocationPermission(context)) {
-            viewModel.getCurrentLocation { lat, long, currentLocation ->
-                location = LatAndLong(lat, long)
-
-                viewModel.getWeatherForecastForCurrentLocation(
-                    longitude = location.longitude,
-                    latitude = location.latitude,
-                    currentLocation = currentLocation
-                )
-            }
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
 
     LaunchedEffect(key1 = favouriteLocations, key2 = Unit) {
         if (favouriteLocations.isEmpty()) {
@@ -86,7 +46,6 @@ fun HomeScreen(
     }
 
     Column {
-
         Text(
             text = "Your Current Location", style = TextStyle(
                 fontWeight = FontWeight.Bold,
@@ -136,12 +95,13 @@ fun HomeScreen(
                     itemsIndexed(weatherForecasts) { index, weatherForecast ->
                         CityCard(
                             name = favouriteLocations[index].name,
-                            // navigate to details screen and pass the data
                             onCardItemClicked = {
                                 navigateToDetailedForecast(
-                                    weatherForecasts[index].location.first.toString(),
-                                    weatherForecasts[index].location.second.toString(),
-                                    favouriteLocations[index].name
+                                    DetailedForecast(
+                                        latitude = weatherForecasts[index].location.first.toString(),
+                                        longitude = weatherForecasts[index].location.second.toString(),
+                                        location = favouriteLocations[index].name
+                                    )
                                 )
                             },
                             uiModel = weatherForecast
@@ -155,8 +115,6 @@ fun HomeScreen(
                     message = state.errorMessage, snackbarHostState = snackBarHostState
                 )
             }
-
         }
-
     }
 }

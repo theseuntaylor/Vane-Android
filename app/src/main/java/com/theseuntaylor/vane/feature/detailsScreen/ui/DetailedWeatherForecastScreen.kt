@@ -210,16 +210,11 @@ fun DetailedWeatherForecastScreen(
     }
 
     LaunchedEffect(key1 = longitude, key2 = latitude) {
-        if (longitude != null && latitude != null) {
-            viewModel.getWeatherForecastForLocation(
-                longitude.toDouble(),
-                latitude.toDouble(),
-                forecastDays = 7
-            )
-            // make call to db, to return the longitude and latitude, which we can use to make calls to get detailed information
-        } else {
-            //show error for not being able to get location ID (which should not be possible btw):]
-        }
+        viewModel.getWeatherForecastForLocation(
+            longitude = longitude.toDouble(),
+            latitude = latitude.toDouble(),
+            forecastDays = 7
+        )
     }
 
 }

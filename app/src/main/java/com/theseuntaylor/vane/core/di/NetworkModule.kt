@@ -71,8 +71,8 @@ class NetworkModule {
             .writeTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .addInterceptor(
                 HttpLoggingInterceptor()
-                    .setLevel(HttpLoggingInterceptor.Level.BODY)
                     .setLevel(HttpLoggingInterceptor.Level.HEADERS)
+                    .setLevel(HttpLoggingInterceptor.Level.BODY)
             )
             .addNetworkInterceptor(interceptor)
     }

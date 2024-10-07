@@ -38,16 +38,19 @@ fun NavGraphBuilder.addLocationScreen(navController: NavController) {
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun NavGraphBuilder.homeScreen(snackbarHostState: SnackbarHostState, navController: NavController) {
+fun NavGraphBuilder.homeScreen(
+    snackbarHostState: SnackbarHostState,
+    navController: NavController
+) {
     composable<Home> {
         HomeScreen(
             snackBarHostState = snackbarHostState,
-            navigateToDetailedForecast = { longitude, latitude, location ->
+            navigateToDetailedForecast = { favouriteLocation ->
                 navController.navigate(
                     DetailedForecast(
-                        location = location,
-                        longitude = longitude,
-                        latitude = latitude
+                        location = favouriteLocation.location,
+                        longitude = favouriteLocation.longitude,
+                        latitude = favouriteLocation.latitude
                     )
                 )
             }

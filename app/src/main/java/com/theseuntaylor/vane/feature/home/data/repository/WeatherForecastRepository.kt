@@ -11,8 +11,8 @@ class WeatherForecastRepository @Inject constructor(
 ) {
 
     fun getWeatherForecast(
-        longitude: Double,
-        latitude: Double,
+        longitude: String,
+        latitude: String,
         forecastDays: Int,
     ): Flow<WeatherForecastResponse> = flow {
         try {
@@ -31,13 +31,22 @@ class WeatherForecastRepository @Inject constructor(
     fun getFavouriteLocationsWeatherForecast(
         longitude: String,
         latitude: String,
+        forecastDays: Int,
     ): Flow<List<WeatherForecastResponse>> = flow {
         try {
+
+            val res = mutableListOf<WeatherForecastResponse>()
+
             val weatherForecastResponse = networkDataSource.getFavouriteLocationsWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
+                forecastDays = forecastDays
             )
-            emit(value = weatherForecastResponse)
+
+            res.addAll(weatherForecastResponse)
+
+            emit(value = res)
+
         } catch (e: Exception) {
             e.localizedMessage
             throw e

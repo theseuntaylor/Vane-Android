@@ -27,8 +27,8 @@ class DetailedWeatherForecastViewModel @Inject constructor(
         forecastDays: Int
     ) = viewModelScope.launch {
         weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
-            longitude = longitude,
-            latitude = latitude,
+            longitude = longitude.toString(),
+            latitude = latitude.toString(),
             forecastDays = forecastDays
         ).onStart {
             _uiState.value = DetailedWeatherForecastUiState.Loading
