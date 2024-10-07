@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.theseuntaylor.vane.core.components.CityCard
-import com.theseuntaylor.vane.core.components.Loader
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
+import com.theseuntaylor.vane.core.components.TopLoader
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -56,7 +56,7 @@ fun HomeScreen(
         when (val state = uiState.collectAsState().value) {
 
             is HomeUiState.Initial, HomeUiState.Loading -> {
-                Loader()
+                TopLoader()
             }
 
             is HomeUiState.Success -> {
@@ -86,7 +86,7 @@ fun HomeScreen(
         when (val state = favouritesUiState) {
 
             is FavouritesUiState.Initial, FavouritesUiState.Loading -> {
-                Loader()
+                TopLoader()
             }
 
             is FavouritesUiState.Success -> {

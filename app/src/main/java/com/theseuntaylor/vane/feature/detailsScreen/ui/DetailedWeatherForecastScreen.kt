@@ -3,9 +3,11 @@ package com.theseuntaylor.vane.feature.detailsScreen.ui
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.theseuntaylor.vane.core.components.CenteredLoader
 import com.theseuntaylor.vane.core.components.HourlyWeatherForecast
-import com.theseuntaylor.vane.core.components.Loader
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.VaneAppBar
 import com.theseuntaylor.vane.core.components.WeatherDetailChip
@@ -54,69 +56,73 @@ fun DetailedWeatherForecastScreen(
             )
         }
     ) { paddingValues ->
-        when (val state = viewModel.uiState.value) {
-            is DetailedWeatherForecastUiState.Initial, DetailedWeatherForecastUiState.Loading -> {
-                Loader()
-            }
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (val state = viewModel.uiState.value) {
+                is DetailedWeatherForecastUiState.Initial, DetailedWeatherForecastUiState.Loading -> {
+                    CenteredLoader()
+                }
 
-            is DetailedWeatherForecastUiState.Error -> {
-                ShowErrorSnackBar(
-                    message = state.errorMessage, snackbarHostState = snackbarHostState
-                )
-            }
+                is DetailedWeatherForecastUiState.Error -> {
+                    ShowErrorSnackBar(
+                        message = state.errorMessage, snackbarHostState = snackbarHostState
+                    )
+                }
 
-            is DetailedWeatherForecastUiState.Success -> {
+                is DetailedWeatherForecastUiState.Success -> {
 
-                LazyColumn(
-                    modifier = modifier.padding(paddingValues),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
 
-                    item { Text("Today's Hourly Forecast") }
+                        item { Text("Today's Hourly Forecast") }
 
-                    item {
-                        HourlyWeatherForecast(
-                            state.data.hourly,
-                        )
-                    }
-
-                    item { Text("Today's Weather Conditions") }
-
-                    item {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "UV Index",
-                                state.data.daily.uv_index_max[0].toString(),
-                                state.data.dailyUnits.uv_index_max,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Precipitation",
-                                state.data.daily.precipitation_sum[0].toString(),
-                                state.data.dailyUnits.precipitation_sum,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
+                        item {
+                            HourlyWeatherForecast(
+                                state.data.hourly,
                             )
                         }
-                    }
 
-                    item {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
+                        item { Text("Today's Weather Conditions") }
+
+                        item {
+                            Row(
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "UV Index",
+                                    state.data.daily.uv_index_max[0].toString(),
+                                    state.data.dailyUnits.uv_index_max,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Precipitation",
+                                    state.data.daily.precipitation_sum[0].toString(),
+                                    state.data.dailyUnits.precipitation_sum,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                            }
+                        }
+
+                        item {
+                            Row(
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
 /*                        WeatherDetailChip(
                             modifier = modifier
                                 .weight(1f)
@@ -126,86 +132,88 @@ fun DetailedWeatherForecastScreen(
                             state.data.dailyUnits.precipitation_sum,
                             weatherDetailDescription = "A very sunny day that proves God is real"
                         )*/
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Sun Rises At",
-                                state.data.daily.sunrise[0].returnTime(),
-                                "",
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Sun Sets At",
-                                state.data.daily.sunset[0].returnTime(),
-                                "",
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Sun Rises At",
+                                    state.data.daily.sunrise[0].returnTime(),
+                                    "",
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Sun Sets At",
+                                    state.data.daily.sunset[0].returnTime(),
+                                    "",
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                            }
                         }
-                    }
 
-                    item {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            WeatherDetailChip(
+                        item {
+                            Row(
                                 modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Pressure",
-                                state.data.current.pressure_msl.toString(),
-                                state.data.currentUnits.pressure_msl,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Surface Pressure",
-                                state.data.current.surfacePressure.toString(),
-                                state.data.currentUnits.surfacePressure,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Pressure",
+                                    state.data.current.pressure_msl.toString(),
+                                    state.data.currentUnits.pressure_msl,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Surface Pressure",
+                                    state.data.current.surfacePressure.toString(),
+                                    state.data.currentUnits.surfacePressure,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                            }
                         }
-                    }
 
-                    item {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            WeatherDetailChip(
+                        item {
+                            Row(
                                 modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Wind Speed",
-                                state.data.current.wind_speed_10m.toString(),
-                                state.data.currentUnits.wind_speed_10m,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
-                            WeatherDetailChip(
-                                modifier = modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(1f),
-                                "Wind Direction",
-                                state.data.current.wind_direction_10m.toString(),
-                                state.data.currentUnits.wind_direction_10m,
-                                weatherDetailDescription = "A very sunny day that proves God is real"
-                            )
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Wind Speed",
+                                    state.data.current.wind_speed_10m.toString(),
+                                    state.data.currentUnits.wind_speed_10m,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                                WeatherDetailChip(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(1f),
+                                    "Wind Direction",
+                                    state.data.current.wind_direction_10m.toString(),
+                                    state.data.currentUnits.wind_direction_10m,
+                                    weatherDetailDescription = "A very sunny day that proves God is real"
+                                )
+                            }
                         }
                     }
+                    // Box of column showing the forecast for the next 7 days [
+                    // what day it is - Highest and lowest temp ]
                 }
-                // Box of column showing the forecast for the next 7 days [
-                // what day it is - Highest and lowest temp ]
             }
+
         }
     }
 
