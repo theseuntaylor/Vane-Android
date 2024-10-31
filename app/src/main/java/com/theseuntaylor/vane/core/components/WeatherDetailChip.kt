@@ -5,7 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,6 +18,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherDetailChip(
     modifier: Modifier,
@@ -21,27 +27,36 @@ fun WeatherDetailChip(
     weatherDetailUnit: String,
     weatherDetailDescription: String = ""
 ) {
-    Card(
-        modifier = modifier
-            .padding(0.dp)
+
+    val tooltipState = rememberTooltipState()
+    val tooltipPositionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider()
+
+    TooltipBox(
+        positionProvider = tooltipPositionProvider,
+        tooltip = { PlainTooltip { Text(weatherDetailDescription) } },
+        state = tooltipState
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(8.dp)
+        Card(
+            modifier = modifier.padding(0.dp)
         ) {
-            Text(weatherDetailTitle)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = modifier.padding(8.dp)
+            ) {
 
-            Row {
-                Text(
-                    weatherDetailValue, style = TextStyle(
-                        fontSize = 32.sp
+                Text(weatherDetailTitle)
+
+                Row {
+                    Text(
+                        weatherDetailValue, style = TextStyle(
+                            fontSize = 32.sp
+                        )
                     )
-                )
-                Text(weatherDetailUnit)
-            }
+                    Text(weatherDetailUnit)
+                }
 
-            Text(weatherDetailDescription)
+            }
         }
     }
 }

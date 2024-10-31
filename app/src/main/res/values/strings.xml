@@ -5,4 +5,15 @@
     <string name="search_results">Search Results</string>
     <string name="latitude">Latitude: %1$s</string>
     <string name="longitude">Longitude: %1$s</string>
+    <string name="today_s_hourly_forecast">Today\'s Hourly Forecast</string>
+    <string name="today_s_weather_conditions">Today\'s Weather Conditions</string>
+    <string name="uv_index">UV Index</string>
+    <string name="precipitation">Precipitation</string>
+    <string name="sun_rises_at">Sun Rises At</string>
+    <string name="sun_sets_at">Sun Sets At</string>
+    <string name="pressure">Pressure</string>
+    <string name="surface_pressure">Surface Pressure</string>
+    <string name="wind_speed">Wind Speed</string>
+    <string name="wind_direction">Wind Direction</string>
+    <string name="additional_information_for">Additional Information for %1$s</string>
 </resources>

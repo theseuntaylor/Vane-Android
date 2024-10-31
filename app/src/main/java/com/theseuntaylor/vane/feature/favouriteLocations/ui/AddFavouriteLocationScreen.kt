@@ -15,12 +15,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +57,7 @@ fun AddFavouriteLocationScreen(
         }
     ) { paddingValues ->
 
+        val focusRequester = remember { FocusRequester() }
         var searchedAddress: String by remember { mutableStateOf("") }
         val listOfAddresses = viewModel.listOfAddresses
 
@@ -67,6 +71,9 @@ fun AddFavouriteLocationScreen(
             Box(modifier = Modifier.height(10.dp))
             VaneSearchTextField(
                 value = searchedAddress,
+                modifier = modifier.focusRequester(
+                    focusRequester = focusRequester
+                ),
                 onValueChanged = { newSearchedAddress ->
                     searchedAddress = newSearchedAddress
                     viewModel.searchLocation(searchedAddress = searchedAddress)
@@ -118,5 +125,8 @@ fun AddFavouriteLocationScreen(
             }
         }
 
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
     }
 }

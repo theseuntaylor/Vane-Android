@@ -29,6 +29,10 @@ class HomeViewModel @Inject constructor(
     private val fusedLocationProviderClient: FusedLocationProviderClient,
 ) : ViewModel() {
 
+    init {
+        getFavouriteLocations()
+    }
+
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Initial)
     val uiState: StateFlow<HomeUiState> = _uiState
         .onStart {
@@ -50,6 +54,7 @@ class HomeViewModel @Inject constructor(
     private val _favouriteUiState = MutableStateFlow<FavouritesUiState>(FavouritesUiState.Initial)
     val favouriteUiState: StateFlow<FavouritesUiState> = _favouriteUiState.asStateFlow()
 
+    // we need both the list and the state??
     var favouriteLocations = MutableStateFlow(mutableListOf<FavouriteLocationsEntity>())
 
     private fun getWeatherForecastForCurrentLocation(
@@ -77,10 +82,14 @@ class HomeViewModel @Inject constructor(
         if (!Geocoder.isPresent()) {
             return "Service not available for your device."
         }
-        return geocoder.getFromLocation(
-            lat, long,
-            1
-        )?.first()?.subAdminArea ?: "Error getting your current Location :("
+
+        val locationNameFromCoordinates = geocoder.getFromLocation(
+            lat, long, 1
+        )
+
+        return locationNameFromCoordinates?.first()?.subAdminArea
+            ?: locationNameFromCoordinates?.first()?.countryName
+            ?: "Error getting your current Location :("
     }
 
     @SuppressLint("MissingPermission")
@@ -106,17 +115,20 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    fun getFavouriteLocations() {
+    private fun getFavouriteLocations() {
         viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations()
                 .onStart {
-                    favouriteLocations.value.clear()
+                    // favouriteLocations.value.clear()
                     Log.e("TAG", "Get favourite location started!!!!")
                 }
                 .collect {
                     if (it.isNotEmpty()) {
-                        getWeatherForecastForFavouriteLocations(it)
+
+                        // todo: map each entity to the ui model (response + city name)
+
                         favouriteLocations.value = it.toMutableList()
+                        getWeatherForecastForFavouriteLocations(it)
                     } else {
                         _favouriteUiState.value =
                             FavouritesUiState.Error("You do not have any saved locations currently.")

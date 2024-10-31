@@ -10,8 +10,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -20,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.theseuntaylor.vane.core.components.CenteredLoader
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.TopLoader
@@ -34,16 +33,10 @@ fun HomeScreen(
     navigateToDetailedForecast: (DetailedForecast) -> Unit
 ) {
 
-    val uiState = viewModel.uiState
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val favouritesUiState by viewModel.favouriteUiState.collectAsStateWithLifecycle()
     val favouriteLocations by viewModel.favouriteLocations.collectAsStateWithLifecycle()
-
-    LaunchedEffect(key1 = favouriteLocations, key2 = Unit) {
-        if (favouriteLocations.isEmpty()) {
-            viewModel.getFavouriteLocations()
-        }
-    }
 
     Column {
         Text(
@@ -53,7 +46,7 @@ fun HomeScreen(
             )
         )
 
-        when (val state = uiState.collectAsState().value) {
+        when (val state = uiState) {
 
             is HomeUiState.Initial, HomeUiState.Loading -> {
                 TopLoader()
@@ -86,7 +79,7 @@ fun HomeScreen(
         when (val state = favouritesUiState) {
 
             is FavouritesUiState.Initial, FavouritesUiState.Loading -> {
-                TopLoader()
+                CenteredLoader()
             }
 
             is FavouritesUiState.Success -> {
