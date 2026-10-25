@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
@@ -14,9 +15,7 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,15 +44,15 @@ fun WeatherDetailChip(
                 modifier = modifier.padding(8.dp)
             ) {
 
-                Text(weatherDetailTitle)
+                Text(weatherDetailTitle, style = MaterialTheme.typography.labelLarge)
 
-                Row {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(weatherDetailValue, style = MaterialTheme.typography.headlineLarge)
                     Text(
-                        weatherDetailValue, style = TextStyle(
-                            fontSize = 32.sp
-                        )
+                        weatherDetailUnit,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(weatherDetailUnit)
                 }
 
             }

@@ -41,6 +41,7 @@ data class Hourly(
         93,
         87,
     ),
+    @SerializedName("weather_code") var weatherCode: List<Int> = emptyList(),
     @SerializedName("wind_speed_10m") var wind_speed_10m: List<Double> = listOf(
         0.0,
         8.0,

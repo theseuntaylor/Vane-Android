@@ -1,0 +1,7 @@
+{
+  "compose": { "path": "app/src/main/java/com/theseuntaylor/vane/core/theme/Color.kt", "package": "com.theseuntaylor.vane.core.theme" },
+  "fonts": {
+    "dirs": ["app/src/main/res/font"],
+    "licenseDir": "app/src/main/assets/font-licenses"
+  }
+}
