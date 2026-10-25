@@ -8,10 +8,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
 
             var locationPermissionsGranted by remember {
@@ -144,6 +147,8 @@ class MainActivity : ComponentActivity() {
                             Box(
                                 modifier = modifier
                                     .padding(innerPaddingValue)
+                                    // Nested screens' Scaffolds/TopAppBars must not pad for system bars again.
+                                    .consumeWindowInsets(innerPaddingValue)
                                     .padding(12.dp)
                             ) {
                                 NavHost(

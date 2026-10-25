@@ -2,14 +2,19 @@ package com.theseuntaylor.vane.feature.home.ui
 
 import android.annotation.SuppressLint
 import android.location.Geocoder
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Priority
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
 import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
+import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
+import com.theseuntaylor.vane.feature.widget.data.FavouriteWeather
+import com.theseuntaylor.vane.feature.widget.data.WidgetWeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +32,7 @@ class HomeViewModel @Inject constructor(
     private val weatherForecastUseCase: GetWeatherForecastUseCase,
     private val geocoder: Geocoder,
     private val fusedLocationProviderClient: FusedLocationProviderClient,
+    private val widgetWeatherRepository: WidgetWeatherRepository,
 ) : ViewModel() {
 
     init {
@@ -75,6 +81,9 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = HomeUiState.Success(
                     it.toUiModel().copy(currentLocation = currentLocation)
                 )
+                // Widget caching must never break the home screen.
+                runCatching { widgetWeatherRepository.onCurrentLocationForecast(it, currentLocation) }
+                    .onFailure { e -> Log.e("HomeViewModel", "Couldn't update widget", e) }
             }
     }
 
@@ -97,22 +106,39 @@ class HomeViewModel @Inject constructor(
         fusedLocationProviderClient.lastLocation
             .addOnSuccessListener { location ->
                 if (location != null) {
-                    val lat = location.latitude
-                    val long = location.longitude
-
-                    val locationFromCoordinates = getLocationFromCoordinates(
-                        long = long,
-                        lat = lat
-                    )
-
-                    callback(
-                        lat, long, locationFromCoordinates
-                    )
+                    onLocationFound(location, callback)
+                } else {
+                    // No cached fix (e.g. right after a reboot): ask for a fresh one.
+                    requestFreshLocation(callback)
                 }
             }
             .addOnFailureListener { exception ->
                 exception.printStackTrace()
             }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestFreshLocation(callback: (Double, Double, String) -> Unit) {
+        fusedLocationProviderClient
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    onLocationFound(location, callback)
+                } else {
+                    _uiState.value = HomeUiState.Error("Couldn't find your current location")
+                }
+            }
+            .addOnFailureListener { exception ->
+                exception.printStackTrace()
+            }
+    }
+
+    private fun onLocationFound(location: Location, callback: (Double, Double, String) -> Unit) {
+        val locationFromCoordinates = getLocationFromCoordinates(
+            long = location.longitude,
+            lat = location.latitude
+        )
+        callback(location.latitude, location.longitude, locationFromCoordinates)
     }
 
     private fun getFavouriteLocations() {
@@ -166,6 +192,7 @@ class HomeViewModel @Inject constructor(
                     _favouriteUiState.value = FavouritesUiState.Success(
                         data = mutableListOf(response)
                     )
+                    cacheFavouritesForWidget(favouriteLocationsEntities, listOf(response))
                 }
             } else {
                 weatherForecastUseCase.invokeFavouriteLocationsWeatherForecast(
@@ -184,8 +211,27 @@ class HomeViewModel @Inject constructor(
                     _favouriteUiState.value = FavouritesUiState.Success(
                         data = response.toMutableList()
                     )
+                    cacheFavouritesForWidget(favouriteLocationsEntities, response)
                 }
             }
         }
+    }
+
+    private suspend fun cacheFavouritesForWidget(
+        entities: List<FavouriteLocationsEntity>,
+        forecasts: List<WeatherForecastUiModel>,
+    ) {
+        val favourites = entities.zip(forecasts) { entity, forecast ->
+            FavouriteWeather(
+                name = entity.name,
+                temperature = forecast.currentTemperature,
+                weatherCode = forecast.current.weatherCode,
+                high = forecast.todayHighAndLow?.first,
+                low = forecast.todayHighAndLow?.second,
+            )
+        }
+        // Widget caching must never break the home screen.
+        runCatching { widgetWeatherRepository.onFavouritesForecast(favourites) }
+            .onFailure { e -> Log.e("HomeViewModel", "Couldn't update widget favourites", e) }
     }
 }

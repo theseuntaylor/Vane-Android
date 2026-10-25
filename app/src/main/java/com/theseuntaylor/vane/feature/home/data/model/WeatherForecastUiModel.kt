@@ -3,6 +3,7 @@ package com.theseuntaylor.vane.feature.home.data.model
 import com.theseuntaylor.vane.core.remote.model.Current
 import com.theseuntaylor.vane.core.remote.model.WeatherForecastResponse
 import com.theseuntaylor.vane.core.utils.WmoCodes
+import com.theseuntaylor.vane.feature.widget.data.todayHighAndLow
 
 data class WeatherForecastUiModel(
     val location: Pair<Double, Double> = Pair(0.0, 0.0),
@@ -12,6 +13,7 @@ data class WeatherForecastUiModel(
     var summary: String = "",
     var currentLocation: String = "",
     val current: Current = Current(),
+    val todayHighAndLow: Pair<Double, Double>? = null,
 )
 
 fun WeatherForecastResponse.toUiModel() = WeatherForecastUiModel(
@@ -26,5 +28,6 @@ fun WeatherForecastResponse.toUiModel() = WeatherForecastUiModel(
     //TODO: use the conversion of WMO codes to get images of the weather conditions
     summary = WmoCodes.getByValue(current.weatherCode)?.info?.second
         ?: "Can\'t get the summary for your current location",
-    current = current
+    current = current,
+    todayHighAndLow = todayHighAndLow(),
 )

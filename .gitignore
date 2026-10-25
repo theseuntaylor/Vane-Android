@@ -17,3 +17,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+docs/DECISIONS.md
+design/node_modules/

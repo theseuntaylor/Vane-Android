@@ -25,11 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.theseuntaylor.vane.R
@@ -63,10 +60,7 @@ fun AddFavouriteLocationScreen(
 
         Column(modifier = modifier.padding(paddingValues)) {
             Text(
-                text = stringResource(R.string.add_another_location), style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
+                text = stringResource(R.string.add_another_location), style = MaterialTheme.typography.titleLarge
             )
             Box(modifier = Modifier.height(10.dp))
             VaneSearchTextField(
@@ -88,10 +82,7 @@ fun AddFavouriteLocationScreen(
                 ) {
                     item {
                         Text(
-                            text = stringResource(R.string.search_results), style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            )
+                            text = stringResource(R.string.search_results), style = MaterialTheme.typography.titleLarge
                         )
                     }
                     itemsIndexed(addresses) { _, address ->
@@ -112,11 +103,11 @@ fun AddFavouriteLocationScreen(
                                 )
                                 Text(
                                     text = stringResource(R.string.latitude, address.latitude),
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                                 Text(
                                     text = stringResource(R.string.longitude, address.longitude),
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
                         }

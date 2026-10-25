@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -72,7 +73,7 @@ fun DetailedWeatherForecastScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
 
-                        item { Text(stringResource(R.string.today_s_hourly_forecast)) }
+                        item { Text(stringResource(R.string.today_s_hourly_forecast), style = MaterialTheme.typography.titleMedium) }
 
                         item {
                             HourlyWeatherForecast(
@@ -80,7 +81,7 @@ fun DetailedWeatherForecastScreen(
                             )
                         }
 
-                        item { Text(stringResource(R.string.today_s_weather_conditions)) }
+                        item { Text(stringResource(R.string.today_s_weather_conditions), style = MaterialTheme.typography.titleMedium) }
 
                         item {
                             Row(

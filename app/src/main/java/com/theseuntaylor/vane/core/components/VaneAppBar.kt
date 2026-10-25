@@ -27,7 +27,7 @@ fun VaneAppBar(
                 IconButton(onClick = navigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Localized description"
+                        contentDescription = "Navigate back"
                     )
                 }
             }
