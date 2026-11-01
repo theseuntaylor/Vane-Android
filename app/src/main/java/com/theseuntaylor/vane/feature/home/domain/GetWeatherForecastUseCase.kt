@@ -14,7 +14,7 @@ import javax.inject.Named
 class GetWeatherForecastUseCase @Inject constructor(
     private val weatherForecastRepository: WeatherForecastRepository,
     private val favouriteLocationRepository: FavouriteLocationRepository,
-    @Named(AppConstants.DEFAULT_DISPATCHER) private val defaultDispatcher: CoroutineDispatcher,
+    @param:Named(AppConstants.DEFAULT_DISPATCHER) private val defaultDispatcher: CoroutineDispatcher,
 ) {
 
     suspend fun invokeCurrentLocationWeatherForecast(

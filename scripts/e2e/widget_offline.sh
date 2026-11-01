@@ -55,6 +55,10 @@ echo "# Widget offline E2E — $(date)" > "$OUT/report.md"
 echo "Device: $SERIAL ($(adb shell getprop ro.product.model | tr -d '\r'), API $(adb shell getprop ro.build.version.sdk | tr -d '\r'))" >> "$OUT/report.md"
 
 step "Online: install, grant location, open the app"
+# The home screen only loads weather while visible, so keep the display awake and unlocked.
+adb shell input keyevent KEYCODE_WAKEUP
+adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+adb shell svc power stayon true >/dev/null 2>&1 || true
 adb shell cmd connectivity airplane-mode disable
 adb shell svc wifi enable >/dev/null 2>&1 || true
 adb shell svc data enable >/dev/null 2>&1 || true
@@ -131,11 +135,17 @@ widget_bound || fail "Widget is no longer bound after reboot"
 adb logcat -d > "$OUT/logcat.txt"
 grep -E "FATAL EXCEPTION" -A3 "$OUT/logcat.txt" | grep -q "$PKG" && fail "Vane crashed after reboot (see logcat.txt)"
 echo "- PASS: no Vane crash after reboot" >> "$OUT/report.md"
+# Glance renders in a WorkManager job; a failed render leaves the widget on its loading spinner
+# without crashing the app.
+grep -qE "No session available|androidx.glance.session.SessionWorker.*\] failed" "$OUT/logcat.txt" \
+    && fail "Glance failed to render the widget after reboot (see logcat.txt)"
+echo "- PASS: no Glance render failure after reboot" >> "$OUT/report.md"
 shot 2-offline
 echo "- CHECK: 2-offline.png must show the same location and temperatures as 1-online.png" >> "$OUT/report.md"
 
 adb shell cmd connectivity airplane-mode disable
 adb shell svc wifi enable >/dev/null 2>&1 || true
 adb shell svc data enable >/dev/null 2>&1 || true
+adb shell svc power stayon false >/dev/null 2>&1 || true
 echo "Done. Artifacts in $OUT"
 cat "$OUT/report.md"
