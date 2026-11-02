@@ -92,7 +92,7 @@ fun WeatherForecastResponse.todayHighAndLow(): Pair<Double, Double>? {
     // Gson leaves `daily` and its lists null when the request didn't ask for them.
     @Suppress("SENSELESS_COMPARISON", "USELESS_ELVIS")
     val today = daily ?: return null
-    val high = today.temperature_2m_max?.firstOrNull() ?: return null
-    val low = today.temperature_2m_min?.firstOrNull() ?: return null
+    val high = today.temperature_2m_max.firstOrNull() ?: return null
+    val low = today.temperature_2m_min.firstOrNull() ?: return null
     return high to low
 }

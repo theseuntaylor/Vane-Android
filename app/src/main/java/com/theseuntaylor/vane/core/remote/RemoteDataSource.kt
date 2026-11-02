@@ -9,7 +9,7 @@ interface RemoteDataSource {
     suspend fun getWeatherForecast(
         @Query("latitude") latitude: String,
         @Query("longitude") longitude: String,
-        // 1 by default. change to 7 for you know what.
+        // 1 by default. change to 7 for weekly data.
         @Query("forecast_days") forecastDays: Int = 1,
         @Query("current") current: String = "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
         @Query("hourly") hourly: String = "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code",

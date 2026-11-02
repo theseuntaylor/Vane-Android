@@ -10,7 +10,7 @@ import javax.inject.Named
 
 class FavouritesUseCase @Inject constructor(
     private val repository: FavouriteLocationRepository,
-    @Named(AppConstants.DEFAULT_DISPATCHER) private val defaultDispatcher: CoroutineDispatcher,
+    @param:Named(AppConstants.DEFAULT_DISPATCHER) private val defaultDispatcher: CoroutineDispatcher,
 ) {
 
     suspend fun invokeSaveNewFavouriteLocation(address: Address) {

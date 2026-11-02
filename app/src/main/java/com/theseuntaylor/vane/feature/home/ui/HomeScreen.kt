@@ -52,7 +52,15 @@ fun HomeScreen(
                 val data = state.data
 
                 CityCard(
-                    name = data.currentLocation, uiModel = data
+                    name = data.currentLocation, uiModel = data, onCardItemClicked = {
+                        navigateToDetailedForecast(
+                            DetailedForecast(
+                                latitude = data.location.first.toString(),
+                                longitude = data.location.second.toString(),
+                                location = data.currentLocation
+                            )
+                        )
+                    }
                 )
 
                 Spacer(modifier = modifier.height(10.dp))

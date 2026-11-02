@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WidgetWeatherRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val store: WidgetWeatherStore,
     private val remoteDataSource: RemoteDataSource,
     private val favouriteLocationsDao: FavouriteLocationsDao,
