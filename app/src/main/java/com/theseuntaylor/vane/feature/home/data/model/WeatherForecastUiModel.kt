@@ -1,5 +1,7 @@
 package com.theseuntaylor.vane.feature.home.data.model
 
+import androidx.annotation.StringRes
+import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.remote.model.Current
 import com.theseuntaylor.vane.core.remote.model.WeatherForecastResponse
 import com.theseuntaylor.vane.core.utils.WmoCodes
@@ -10,7 +12,7 @@ data class WeatherForecastUiModel(
     val timeOfLocation: String = "",
     val currentTemperature: Double = 0.0,
     val highestAndLowestTemperature: Pair<Double, Double> = Pair(0.0, 0.0),
-    var summary: String = "",
+    @StringRes var summary: Int = R.string.weather_summary_unavailable,
     var currentLocation: String = "",
     val current: Current = Current(),
     val todayHighAndLow: Pair<Double, Double>? = null,
@@ -26,8 +28,8 @@ fun WeatherForecastResponse.toUiModel() = WeatherForecastUiModel(
     ),
     currentLocation = "",
     //TODO: use the conversion of WMO codes to get images of the weather conditions
-    summary = WmoCodes.getByValue(current.weatherCode)?.info?.second
-        ?: "Can\'t get the summary for your current location",
+    summary = WmoCodes.getByValue(current.weatherCode)?.description
+        ?: R.string.weather_summary_unavailable,
     current = current,
     todayHighAndLow = todayHighAndLow(),
 )

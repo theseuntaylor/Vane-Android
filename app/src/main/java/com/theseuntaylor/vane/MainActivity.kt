@@ -126,8 +126,8 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) {
                                 scope.launch {
                                     val userAction = snackbarHostState.showSnackbar(
-                                        message = "Please authorize location permissions",
-                                        actionLabel = "Approve",
+                                        message = getString(R.string.location_permission_rationale),
+                                        actionLabel = getString(R.string.approve),
                                         duration = SnackbarDuration.Indefinite,
                                         withDismissAction = true
                                     )

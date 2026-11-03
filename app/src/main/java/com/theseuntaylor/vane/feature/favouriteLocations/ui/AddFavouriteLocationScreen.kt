@@ -43,7 +43,7 @@ fun AddFavouriteLocationScreen(
     Scaffold(
         topBar = {
             VaneAppBar(
-                title = "Add a New Location",
+                title = stringResource(R.string.add_a_new_location),
                 navController = navController,
                 navigateBack = {
                     if (navController.previousBackStackEntry != null) {

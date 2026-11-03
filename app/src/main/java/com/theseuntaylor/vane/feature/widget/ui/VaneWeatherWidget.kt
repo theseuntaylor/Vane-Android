@@ -44,6 +44,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.theseuntaylor.vane.MainActivity
+import androidx.glance.LocalContext
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.theme.DarkColorScheme
 import com.theseuntaylor.vane.core.theme.LightColorScheme
@@ -363,4 +364,6 @@ private fun UpdatedChip(context: Context, snapshot: WidgetWeatherSnapshot) {
 
 private fun formatTemperature(celsius: Double) = "${celsius.roundToInt()}°"
 
-private fun conditionLabel(code: Int) = WmoCodes.getByValue(code)?.info?.second ?: ""
+@Composable
+private fun conditionLabel(code: Int): String =
+    WmoCodes.getByValue(code)?.let { LocalContext.current.getString(it.description) } ?: ""
