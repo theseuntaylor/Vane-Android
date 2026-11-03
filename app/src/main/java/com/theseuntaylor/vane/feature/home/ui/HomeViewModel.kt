@@ -11,6 +11,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
+import com.theseuntaylor.vane.core.utils.findAddress
 import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
@@ -91,17 +92,15 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    private fun getLocationFromCoordinates(long: Double, lat: Double): String {
+    private suspend fun getLocationFromCoordinates(long: Double, lat: Double): String {
         if (!Geocoder.isPresent()) {
             return context.getString(R.string.geocoder_unavailable)
         }
 
-        val locationNameFromCoordinates = geocoder.getFromLocation(
-            lat, long, 1
-        )
+        val address = geocoder.findAddress(latitude = lat, longitude = long)
 
-        return locationNameFromCoordinates?.first()?.subAdminArea
-            ?: locationNameFromCoordinates?.first()?.countryName
+        return address?.subAdminArea
+            ?: address?.countryName
             ?: context.getString(R.string.location_name_unavailable)
     }
 
@@ -138,11 +137,13 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onLocationFound(location: Location, callback: (Double, Double, String) -> Unit) {
-        val locationFromCoordinates = getLocationFromCoordinates(
-            long = location.longitude,
-            lat = location.latitude
-        )
-        callback(location.latitude, location.longitude, locationFromCoordinates)
+        viewModelScope.launch {
+            val locationFromCoordinates = getLocationFromCoordinates(
+                long = location.longitude,
+                lat = location.latitude
+            )
+            callback(location.latitude, location.longitude, locationFromCoordinates)
+        }
     }
 
     private fun getFavouriteLocations() {

@@ -2,12 +2,12 @@ package com.theseuntaylor.vane.feature.favouriteLocations.ui
 
 import android.location.Address
 import android.location.Geocoder
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.theseuntaylor.vane.core.utils.findAddresses
 import com.theseuntaylor.vane.feature.favouriteLocations.domain.FavouritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -22,16 +22,16 @@ class FavouriteLocationViewModel @Inject constructor(
     private val _listOfAddresses = MutableStateFlow<List<Address>>(emptyList())
     val listOfAddresses = _listOfAddresses.asStateFlow()
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private var searchJob: Job? = null
+
     fun searchLocation(searchedAddress: String) {
-        if (Geocoder.isPresent()) {
-            geocoder.getFromLocationName(
-                searchedAddress,
-                10
-            ) { p0 ->
-                if (p0.isNotEmpty()) {
-                    _listOfAddresses.value = p0
-                }
+        if (!Geocoder.isPresent()) return
+        // Each keystroke starts a search; only the latest one may update the results.
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            val addresses = geocoder.findAddresses(searchedAddress, 10)
+            if (addresses.isNotEmpty()) {
+                _listOfAddresses.value = addresses
             }
         }
     }

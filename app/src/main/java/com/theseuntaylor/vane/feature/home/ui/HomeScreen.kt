@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.feature.home.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -24,7 +22,6 @@ import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.TopLoader
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,

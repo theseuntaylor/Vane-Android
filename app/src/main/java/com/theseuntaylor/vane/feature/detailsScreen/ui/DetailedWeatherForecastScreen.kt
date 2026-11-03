@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.feature.detailsScreen.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,7 +28,6 @@ import com.theseuntaylor.vane.core.components.WeatherDetailChip
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 import com.theseuntaylor.vane.core.utils.returnTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DetailedWeatherForecastScreen(
     modifier: Modifier,

@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.core.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +26,6 @@ import com.theseuntaylor.vane.core.utils.weatherIconRes
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CityCard(
     modifier: Modifier = Modifier,

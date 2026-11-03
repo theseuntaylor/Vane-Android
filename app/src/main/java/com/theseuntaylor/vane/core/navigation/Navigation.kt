@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.core.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -13,7 +11,6 @@ import com.theseuntaylor.vane.feature.detailsScreen.ui.DetailedWeatherForecastSc
 import com.theseuntaylor.vane.feature.favouriteLocations.ui.AddFavouriteLocationScreen
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.detailedForecastScreen(
     modifier: Modifier,
     snackbarHostState: SnackbarHostState,
@@ -30,14 +27,12 @@ fun NavGraphBuilder.detailedForecastScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.addLocationScreen(navController: NavController) {
     composable<AddFavouriteLocation> {
         AddFavouriteLocationScreen(navController = navController)
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.homeScreen(
     snackbarHostState: SnackbarHostState,
     navController: NavController
