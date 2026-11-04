@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.core.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,14 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.utils.returnTime
 import com.theseuntaylor.vane.core.utils.weatherIconRes
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CityCard(
     modifier: Modifier = Modifier,
@@ -59,7 +58,7 @@ fun CityCard(
                 ) {
                     Icon(
                         painter = painterResource(weatherIconRes(current.weatherCode)),
-                        contentDescription = uiModel.summary,
+                        contentDescription = stringResource(uiModel.summary),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp),
                     )
@@ -86,13 +85,16 @@ fun CityCard(
                 )
 
                 Text(
-                    "H ${uiModel.highestAndLowestTemperature.first.roundToInt()}° · " +
-                            "L ${uiModel.highestAndLowestTemperature.second.roundToInt()}°",
+                    stringResource(
+                        R.string.high_low,
+                        uiModel.highestAndLowestTemperature.first.roundToInt(),
+                        uiModel.highestAndLowestTemperature.second.roundToInt(),
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(uiModel.summary, style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(uiModel.summary), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

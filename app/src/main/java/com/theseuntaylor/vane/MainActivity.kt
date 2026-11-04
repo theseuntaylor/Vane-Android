@@ -1,7 +1,6 @@
 package com.theseuntaylor.vane
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -51,7 +50,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -126,8 +124,8 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) {
                                 scope.launch {
                                     val userAction = snackbarHostState.showSnackbar(
-                                        message = "Please authorize location permissions",
-                                        actionLabel = "Approve",
+                                        message = getString(R.string.location_permission_rationale),
+                                        actionLabel = getString(R.string.approve),
                                         duration = SnackbarDuration.Indefinite,
                                         withDismissAction = true
                                     )

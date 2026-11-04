@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.feature.detailsScreen.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,7 +28,6 @@ import com.theseuntaylor.vane.core.components.WeatherDetailChip
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 import com.theseuntaylor.vane.core.utils.returnTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DetailedWeatherForecastScreen(
     modifier: Modifier,
@@ -63,7 +60,7 @@ fun DetailedWeatherForecastScreen(
 
                 is DetailedWeatherForecastUiState.Error -> {
                     ShowErrorSnackBar(
-                        message = state.errorMessage, snackbarHostState = snackbarHostState
+                        message = stringResource(state.errorMessage), snackbarHostState = snackbarHostState
                     )
                 }
 
@@ -97,7 +94,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.uv_index),
                                         state.data.daily.uv_index_max[0].toString(),
                                         state.data.dailyUnits.uv_index_max,
-                                        weatherDetailDescription = "A measure of ultraviolet radiation from the sun." + " Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0-2 is low risk, 8+ is very high risk)."
+                                        weatherDetailDescription = stringResource(R.string.uv_index_description)
                                     )
                                 }
 
@@ -109,7 +106,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.precipitation),
                                         state.data.daily.precipitation_sum[0].toString(),
                                         state.data.dailyUnits.precipitation_sum,
-                                        weatherDetailDescription = "Any form of water, such as rain, snow, sleet, or hail, that falls from the sky. Usually measured in millimeters (mm)."
+                                        weatherDetailDescription = stringResource(R.string.precipitation_description)
                                     )
                                 }
                             }
@@ -129,7 +126,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.sun_rises_at),
                                         state.data.daily.sunrise[0].returnTime(),
                                         "",
-                                        weatherDetailDescription = "The local time when the sun first appears above the horizon, marking the start of daylight."
+                                        weatherDetailDescription = stringResource(R.string.sunrise_description)
                                     )
                                 }
 
@@ -139,7 +136,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.sun_sets_at),
                                         state.data.daily.sunset[0].returnTime(),
                                         "",
-                                        weatherDetailDescription = "The local time when the sun drops below the horizon, marking the start of nighttime."
+                                        weatherDetailDescription = stringResource(R.string.sunset_description)
                                     )
                                 }
                             }
@@ -159,7 +156,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.pressure),
                                         state.data.current.pressure_msl.toString(),
                                         state.data.currentUnits.pressure_msl,
-                                        weatherDetailDescription = "The weight of the atmosphere exerted at a given point. Normal atmospheric pressure at sea level is about 1013 hPa."
+                                        weatherDetailDescription = stringResource(R.string.pressure_description)
                                     )
                                 }
 
@@ -169,7 +166,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.surface_pressure),
                                         state.data.current.surfacePressure.toString(),
                                         state.data.currentUnits.surfacePressure,
-                                        weatherDetailDescription = "Atmospheric pressure measured specifically at ground level, which can differ from sea level pressure due to altitude."
+                                        weatherDetailDescription = stringResource(R.string.surface_pressure_description)
                                     )
                                 }
                             }
@@ -190,7 +187,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.wind_speed),
                                         state.data.current.wind_speed_10m.toString(),
                                         state.data.currentUnits.wind_speed_10m,
-                                        weatherDetailDescription = " The rate at which air moves, measured in kilometers per hour (km/h) or meters per second (m/s)."
+                                        weatherDetailDescription = stringResource(R.string.wind_speed_description)
                                     )
                                 }
 
@@ -200,7 +197,7 @@ fun DetailedWeatherForecastScreen(
                                         stringResource(R.string.wind_direction),
                                         state.data.current.wind_direction_10m.toString(),
                                         state.data.currentUnits.wind_direction_10m,
-                                        weatherDetailDescription = " The direction from which the wind is blowing, usually measured in degrees (0° = North, 90° = East, 180° = South, 270° = West)."
+                                        weatherDetailDescription = stringResource(R.string.wind_direction_description)
                                     )
                                 }
 

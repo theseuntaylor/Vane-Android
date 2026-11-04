@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.feature.favouriteLocations.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +31,6 @@ import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.VaneAppBar
 import com.theseuntaylor.vane.core.components.VaneSearchTextField
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AddFavouriteLocationScreen(
     modifier: Modifier = Modifier,
@@ -43,7 +40,7 @@ fun AddFavouriteLocationScreen(
     Scaffold(
         topBar = {
             VaneAppBar(
-                title = "Add a New Location",
+                title = stringResource(R.string.add_a_new_location),
                 navController = navController,
                 navigateBack = {
                     if (navController.previousBackStackEntry != null) {

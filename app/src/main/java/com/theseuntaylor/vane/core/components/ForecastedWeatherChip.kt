@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.core.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -17,7 +15,6 @@ import com.theseuntaylor.vane.core.remote.model.Hourly
 import com.theseuntaylor.vane.core.utils.returnTime
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HourlyWeatherForecast(hourly: Hourly) {
     LazyRow(

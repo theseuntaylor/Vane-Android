@@ -22,4 +22,62 @@
     <string name="widget_updated">Updated %1$s</string>
     <string name="widget_favourites">Favourites</string>
     <string name="widget_high_low">H %1$s · L %2$s</string>
+
+    <!-- Home -->
+    <string name="your_current_location">Your Current Location</string>
+    <string name="favourite_locations">Favourite Locations</string>
+    <string name="high_low">H %1$s° · L %2$s°</string>
+    <string name="add_a_new_location">Add a New Location</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="add_location_button">Plus button for adding a new location</string>
+    <string name="location_permission_rationale">Please authorize location permissions</string>
+    <string name="approve">Approve</string>
+
+    <!-- Location names -->
+    <string name="geocoder_unavailable">Service not available for your device.</string>
+    <string name="location_name_unavailable">Error getting your current Location :(</string>
+
+    <!-- Errors -->
+    <string name="error_loading_forecasts">There was an error loading forecasts</string>
+    <string name="error_current_location_not_found">Couldn\'t find your current location</string>
+    <string name="error_no_saved_locations">You do not have any saved locations currently.</string>
+
+    <!-- Weather detail descriptions -->
+    <string name="uv_index_description">A measure of ultraviolet radiation from the sun. Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0-2 is low risk, 8+ is very high risk).</string>
+    <string name="precipitation_description">Any form of water, such as rain, snow, sleet, or hail, that falls from the sky. Usually measured in millimeters (mm).</string>
+    <string name="sunrise_description">The local time when the sun first appears above the horizon, marking the start of daylight.</string>
+    <string name="sunset_description">The local time when the sun drops below the horizon, marking the start of nighttime.</string>
+    <string name="pressure_description">The weight of the atmosphere exerted at a given point. Normal atmospheric pressure at sea level is about 1013 hPa.</string>
+    <string name="surface_pressure_description">Atmospheric pressure measured specifically at ground level, which can differ from sea level pressure due to altitude.</string>
+    <string name="wind_speed_description">The rate at which air moves, measured in kilometers per hour (km/h) or meters per second (m/s).</string>
+    <string name="wind_direction_description">The direction from which the wind is blowing, usually measured in degrees (0° = North, 90° = East, 180° = South, 270° = West).</string>
+
+    <!-- WMO weather codes -->
+    <string name="weather_summary_unavailable">Can\'t get the summary for your current location</string>
+    <string name="wmo_clear_sky">Clear Sky</string>
+    <string name="wmo_mainly_clear">Mainly Clear Skies</string>
+    <string name="wmo_partly_cloudy">Partly Cloudy Skies</string>
+    <string name="wmo_overcast">Overcast Skies</string>
+    <string name="wmo_foggy">Expect Fogs</string>
+    <string name="wmo_rime_fog">Depositing Rime Fog</string>
+    <string name="wmo_light_drizzle">Light Drizzles</string>
+    <string name="wmo_moderate_drizzle">Moderate Drizzles</string>
+    <string name="wmo_dense_drizzle">Dense Drizzles</string>
+    <string name="wmo_slight_rain">Slight Intensity Rain</string>
+    <string name="wmo_moderate_rain">Moderate Intensity Rain</string>
+    <string name="wmo_heavy_rain">Heavy Intensity Rain</string>
+    <string name="wmo_light_freezing_rain">Light Intensity Freezing Rain</string>
+    <string name="wmo_heavy_freezing_rain">Heavy Intensity Freezing Rain</string>
+    <string name="wmo_slight_snowfall">Slight Intensity Snow Fall</string>
+    <string name="wmo_moderate_snowfall">Moderate Intensity Snow Fall</string>
+    <string name="wmo_heavy_snowfall">Heavy Intensity Snow Fall</string>
+    <string name="wmo_snow_grains">Snow Grains</string>
+    <string name="wmo_slight_rain_showers">Slight Rain Showers</string>
+    <string name="wmo_moderate_rain_showers">Moderate Rain Showers</string>
+    <string name="wmo_violent_rain_showers">Violent Rain Showers</string>
+    <string name="wmo_slight_snow_showers">Slight Snow Showers</string>
+    <string name="wmo_heavy_snow_showers">Heavy Snow Showers</string>
+    <string name="wmo_thunderstorm">Slight or Moderate Thunderstorms</string>
+    <string name="wmo_thunderstorm_heavy_hail">Thunderstorm with Heavy Hail</string>
+    <string name="wmo_thunderstorm_slight_hail">Thunderstorm with Slight Hail</string>
 </resources>

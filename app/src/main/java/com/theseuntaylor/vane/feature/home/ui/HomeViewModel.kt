@@ -1,6 +1,7 @@
 package com.theseuntaylor.vane.feature.home.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.location.Geocoder
 import android.location.Location
 import android.util.Log
@@ -8,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
+import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
+import com.theseuntaylor.vane.core.utils.findAddress
 import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
@@ -16,6 +19,7 @@ import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
 import com.theseuntaylor.vane.feature.widget.data.FavouriteWeather
 import com.theseuntaylor.vane.feature.widget.data.WidgetWeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val weatherForecastUseCase: GetWeatherForecastUseCase,
     private val geocoder: Geocoder,
     private val fusedLocationProviderClient: FusedLocationProviderClient,
@@ -74,8 +79,8 @@ class HomeViewModel @Inject constructor(
         )
             .onStart { _uiState.value = HomeUiState.Loading }
             .catch {
-                _uiState.value =
-                    HomeUiState.Error(it.message ?: "There was an error loading forecasts")
+                Log.e("HomeViewModel", "Couldn't load the forecast", it)
+                _uiState.value = HomeUiState.Error(R.string.error_loading_forecasts)
             }
             .collect {
                 _uiState.value = HomeUiState.Success(
@@ -87,18 +92,16 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    private fun getLocationFromCoordinates(long: Double, lat: Double): String {
+    private suspend fun getLocationFromCoordinates(long: Double, lat: Double): String {
         if (!Geocoder.isPresent()) {
-            return "Service not available for your device."
+            return context.getString(R.string.geocoder_unavailable)
         }
 
-        val locationNameFromCoordinates = geocoder.getFromLocation(
-            lat, long, 1
-        )
+        val address = geocoder.findAddress(latitude = lat, longitude = long)
 
-        return locationNameFromCoordinates?.first()?.subAdminArea
-            ?: locationNameFromCoordinates?.first()?.countryName
-            ?: "Error getting your current Location :("
+        return address?.subAdminArea
+            ?: address?.countryName
+            ?: context.getString(R.string.location_name_unavailable)
     }
 
     @SuppressLint("MissingPermission")
@@ -125,7 +128,7 @@ class HomeViewModel @Inject constructor(
                 if (location != null) {
                     onLocationFound(location, callback)
                 } else {
-                    _uiState.value = HomeUiState.Error("Couldn't find your current location")
+                    _uiState.value = HomeUiState.Error(R.string.error_current_location_not_found)
                 }
             }
             .addOnFailureListener { exception ->
@@ -134,11 +137,13 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onLocationFound(location: Location, callback: (Double, Double, String) -> Unit) {
-        val locationFromCoordinates = getLocationFromCoordinates(
-            long = location.longitude,
-            lat = location.latitude
-        )
-        callback(location.latitude, location.longitude, locationFromCoordinates)
+        viewModelScope.launch {
+            val locationFromCoordinates = getLocationFromCoordinates(
+                long = location.longitude,
+                lat = location.latitude
+            )
+            callback(location.latitude, location.longitude, locationFromCoordinates)
+        }
     }
 
     private fun getFavouriteLocations() {
@@ -157,7 +162,7 @@ class HomeViewModel @Inject constructor(
                         getWeatherForecastForFavouriteLocations(it)
                     } else {
                         _favouriteUiState.value =
-                            FavouritesUiState.Error("You do not have any saved locations currently.")
+                            FavouritesUiState.Error(R.string.error_no_saved_locations)
                     }
                 }
         }
@@ -182,10 +187,9 @@ class HomeViewModel @Inject constructor(
                 ).onStart {
                     _favouriteUiState.value = FavouritesUiState.Loading
                 }.catch {
+                    Log.e("HomeViewModel", "Couldn't load favourite forecasts", it)
                     _favouriteUiState.value =
-                        FavouritesUiState.Error(
-                            it.message ?: "There was an error loading forecasts"
-                        )
+                        FavouritesUiState.Error(R.string.error_loading_forecasts)
                 }.map { response ->
                     response.toUiModel()
                 }.collect { response ->
@@ -201,10 +205,9 @@ class HomeViewModel @Inject constructor(
                 ).onStart {
                     _favouriteUiState.value = FavouritesUiState.Loading
                 }.catch {
+                    Log.e("HomeViewModel", "Couldn't load favourite forecasts", it)
                     _favouriteUiState.value =
-                        FavouritesUiState.Error(
-                            it.message ?: "There was an error loading forecasts"
-                        )
+                        FavouritesUiState.Error(R.string.error_loading_forecasts)
                 }.map { response ->
                     response.map { it.toUiModel() }
                 }.collect { response ->

@@ -1,7 +1,5 @@
 package com.theseuntaylor.vane.feature.home.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -13,16 +11,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.CenteredLoader
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.TopLoader
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -38,7 +37,7 @@ fun HomeScreen(
 
     Column {
         Text(
-            text = "Your Current Location",
+            text = stringResource(R.string.your_current_location),
             style = MaterialTheme.typography.titleLarge,
         )
 
@@ -68,13 +67,13 @@ fun HomeScreen(
 
             is HomeUiState.Error -> {
                 ShowErrorSnackBar(
-                    message = state.errorMessage, snackbarHostState = snackBarHostState
+                    message = stringResource(state.errorMessage), snackbarHostState = snackBarHostState
                 )
             }
         }
 
         if (favouriteLocations.isNotEmpty()) Text(
-            text = "Favourite Locations",
+            text = stringResource(R.string.favourite_locations),
             style = MaterialTheme.typography.titleLarge,
         )
 
@@ -107,7 +106,7 @@ fun HomeScreen(
 
             is FavouritesUiState.Error -> {
                 ShowErrorSnackBar(
-                    message = state.errorMessage, snackbarHostState = snackBarHostState
+                    message = stringResource(state.errorMessage), snackbarHostState = snackBarHostState
                 )
             }
         }
