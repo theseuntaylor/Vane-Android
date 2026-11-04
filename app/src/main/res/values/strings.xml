@@ -30,8 +30,11 @@
     <string name="add_a_new_location">Add a New Location</string>
     <string name="navigate_back">Navigate back</string>
     <string name="add_location_button">Plus button for adding a new location</string>
-    <string name="location_permission_rationale">Please authorize location permissions</string>
-    <string name="approve">Approve</string>
+    <string name="location_permission_title">Vane needs your location</string>
+    <string name="location_permission_body">Vane uses your location to show the weather where you are. Approximate location is enough.</string>
+    <string name="location_permission_body_settings">Location access is turned off for Vane. To see the weather where you are, allow location in Settings.</string>
+    <string name="allow_location">Allow location</string>
+    <string name="open_settings">Open settings</string>
 
     <!-- Location names -->
     <string name="geocoder_unavailable">Service not available for your device.</string>
