@@ -6,7 +6,8 @@
 # 1. Denies the permission prompt once: the app shows "Allow location".
 # 2. Denies it again (Android then stops asking): the app shows "Open settings" and stays in front.
 # 3. Reopens the app: it still shows "Open settings" and does not jump to Settings by itself.
-# 4. Taps "Open settings", grants only approximate location, comes back: the home screen shows a forecast.
+# 4. Taps "Open settings", grants only approximate location, presses HOME and opens Vane from the
+#    launcher: Vane's home screen shows a forecast, not the settings page it opened.
 # 5. Writes screenshots and a report to build/e2e/location-permission-<timestamp>/.
 set -eu
 
@@ -36,7 +37,7 @@ for permission in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION; do
     adb shell pm clear-permission-flags $PKG android.permission.$permission user-set user-fixed
 done
 adb logcat -c
-adb shell am start -W -n $PKG/.MainActivity >/dev/null
+start_vane
 
 step "Deny once"
 deny_prompt 1-first-prompt
@@ -54,33 +55,45 @@ shot 2-denied-twice
 pass "after two denials the app offers 'Open settings' and stays in front (2-denied-twice.png)"
 
 step "Reopen the app"
-adb shell am start -S -W -n $PKG/.MainActivity >/dev/null
+start_vane -S
 wait_for "$OPEN_SETTINGS" || { shot 3-reopened; fail "No 'Open settings' button after reopening (3-reopened.png)"; }
 sleep 5
 [ "$(focused_package)" = "$PKG" ] || fail "The app opened $(focused_package) by itself after reopening"
 shot 3-reopened
 pass "reopening shows 'Open settings' and does not open Settings by itself (3-reopened.png)"
 
-step "Open settings, grant approximate location only, come back"
+step "Open settings, grant approximate location only, leave with HOME, open Vane from the launcher"
 tap_node "$OPEN_SETTINGS"
 sleep 3
 [ "$(focused_package)" != "$PKG" ] || fail "Tapping 'Open settings' did not leave the app"
 shot 4-settings
 pass "tapping 'Open settings' opens $(focused_package) (4-settings.png)"
+# Settings must open in its own task. On top of Vane's task, returning to Vane from Recents shows Settings.
+case "$(vane_task_top)" in
+    "$PKG"/*) pass "Settings opened in its own task; Vane's task still ends at $(vane_task_top)" ;;
+    *) fail "Settings opened inside Vane's task (top activity $(vane_task_top))" ;;
+esac
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION
-adb shell input keyevent BACK
-wait_for "$HOME_TITLE" || { shot 5-approximate; fail "Home screen didn't open with approximate location (5-approximate.png)"; }
+# Leave Settings the way many users do: HOME, then the Vane icon. If Settings had opened inside
+# Vane's task, the icon would bring back the settings page instead of Vane.
+adb shell input keyevent HOME
+sleep 1
+adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+sleep 3
+[ "$(focused_package)" = "$PKG" ] || { shot 5-relaunched; fail "Opening Vane from the launcher showed $(focused_package) (5-relaunched.png)"; }
+wait_for "$HOME_TITLE" || { shot 5-relaunched; fail "Home screen didn't open with approximate location (5-relaunched.png)"; }
+pass "opening Vane from the launcher after Settings shows Vane's home screen, not Settings"
 # The emulator only reports GPS fixes it is sent while a request is active.
 i=0
 until ui | grep -qE "$TEMPERATURE"; do
-    i=$((i + 1)); [ $i -gt 45 ] && { shot 5-approximate; fail "No forecast with approximate location (5-approximate.png)"; }
+    i=$((i + 1)); [ $i -gt 45 ] && { shot 5-relaunched; fail "No forecast with approximate location (5-relaunched.png)"; }
     adb emu geo fix -0.1276 51.5072 >/dev/null
     sleep 1
 done
 [ "$(adb shell dumpsys package $PKG | grep -c 'ACCESS_FINE_LOCATION: granted=true')" = 0 ] \
     || fail "Precise location was granted; this step must run with approximate only"
-shot 5-approximate
-pass "with approximate location only, the home screen shows a forecast on return (5-approximate.png)"
+shot 5-relaunched
+pass "with approximate location only, the home screen shows a forecast (5-relaunched.png)"
 check_no_crash
 
 adb shell svc power stayon false >/dev/null 2>&1 || true

@@ -43,7 +43,9 @@
     <!-- Errors -->
     <string name="error_loading_forecasts">There was an error loading forecasts</string>
     <string name="error_current_location_not_found">Couldn\'t find your current location</string>
-    <string name="error_no_saved_locations">You do not have any saved locations currently.</string>
+    <string name="error_location_off">Location is turned off. Turn it on to see the weather where you are.</string>
+    <string name="try_again">Try again</string>
+    <string name="favourites_empty">Tap + to add a favourite location.</string>
 
     <!-- Weather detail descriptions -->
     <string name="uv_index_description">A measure of ultraviolet radiation from the sun. Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0-2 is low risk, 8+ is very high risk).</string>

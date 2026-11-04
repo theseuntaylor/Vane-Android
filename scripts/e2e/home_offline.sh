@@ -23,7 +23,7 @@ ERROR='text="There was an error loading forecasts"'
 current_temperature() { ui | grep -oE "$TEMPERATURE" | head -1; }
 open_app_at_london() {
     adb emu geo fix -0.1276 51.5072 >/dev/null
-    adb shell am start -S -W -n $PKG/.MainActivity >/dev/null
+    start_vane -S
     # The emulator only reports GPS fixes it is sent while a request is active.
     for _ in 1 2 3; do sleep 1; adb emu geo fix -0.1276 51.5072 >/dev/null; done
 }

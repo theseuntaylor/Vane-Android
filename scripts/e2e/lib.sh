@@ -39,6 +39,13 @@ tap_node() {
 focused_package() {
     adb shell dumpsys window | grep -m1 mCurrentFocus | sed -n 's/.* \([a-zA-Z0-9_.]*\)\/.*/\1/p'
 }
+# Starts Vane in a fresh, cleared task (FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK), so no
+# screen left over from an earlier run is on top. Pass -S to also restart the process.
+start_vane() { adb shell am start -W -f 0x10008000 "$@" -n $PKG/.MainActivity >/dev/null; }
+# The top activity of the task that has Vane's MainActivity at its base.
+vane_task_top() {
+    adb shell am stack list | grep "taskId=.*$PKG/$PKG.MainActivity" | sed -n 's/.*topActivity=ComponentInfo{\([^}]*\)}.*/\1/p'
+}
 wake_device() {
     adb shell input keyevent KEYCODE_WAKEUP
     adb shell wm dismiss-keyguard >/dev/null 2>&1 || true

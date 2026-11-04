@@ -122,10 +122,7 @@ class MainActivity : ComponentActivity() {
                                     startDestination = Home,
                                     modifier = Modifier
                                 ) {
-                                    homeScreen(
-                                        snackbarHostState,
-                                        navController = navController,
-                                    )
+                                    homeScreen(navController = navController)
                                     addLocationScreen(navController = navController)
                                     detailedForecastScreen(
                                         modifier = modifier,
@@ -153,6 +150,9 @@ class MainActivity : ComponentActivity() {
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
             Uri.fromParts("package", packageName, null)
         ).also {
+            // Its own task: otherwise Settings sits on top of Vane's task, and returning to Vane
+            // from Recents (or after Android kills it) shows the settings page instead of Vane.
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(it)
         }
     }
