@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Gson builds the Open-Meteo response models by reflection. Gson's own rules keep @SerializedName
+# fields; this also keeps the classes and their generic signatures (e.g. List<Double>) intact.
+-keep class com.theseuntaylor.vane.core.remote.model.** { *; }

@@ -15,7 +15,6 @@
     <string name="surface_pressure">Surface Pressure</string>
     <string name="wind_speed">Wind Speed</string>
     <string name="wind_direction">Wind Direction</string>
-    <string name="additional_information_for">Additional Information for %1$s</string>
     <string name="widget_name">Vane Weather</string>
     <string name="widget_description">Current weather, the next few hours and your favourites, even when Vane is closed.</string>
     <string name="widget_empty_state">Open Vane once to load the weather here.</string>
@@ -43,7 +42,7 @@
     <string name="error_no_saved_locations">You do not have any saved locations currently.</string>
 
     <!-- Weather detail descriptions -->
-    <string name="uv_index_description">A measure of ultraviolet radiation from the sun. Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0-2 is low risk, 8+ is very high risk).</string>
+    <string name="uv_index_description">A measure of ultraviolet radiation from the sun. Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0–2 is low risk, 8+ is very high risk).</string>
     <string name="precipitation_description">Any form of water, such as rain, snow, sleet, or hail, that falls from the sky. Usually measured in millimeters (mm).</string>
     <string name="sunrise_description">The local time when the sun first appears above the horizon, marking the start of daylight.</string>
     <string name="sunset_description">The local time when the sun drops below the horizon, marking the start of nighttime.</string>

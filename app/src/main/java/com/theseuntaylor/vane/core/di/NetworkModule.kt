@@ -69,11 +69,12 @@ class NetworkModule {
             .readTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
-            .addInterceptor(
-                HttpLoggingInterceptor()
-                    .setLevel(HttpLoggingInterceptor.Level.HEADERS)
-                    .setLevel(HttpLoggingInterceptor.Level.BODY)
-            )
+            .apply {
+                // Full request and response logging is for debugging only; release builds log nothing.
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                }
+            }
             .addNetworkInterceptor(interceptor)
     }
 
