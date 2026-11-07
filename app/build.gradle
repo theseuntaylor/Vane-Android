@@ -1,14 +1,15 @@
 plugins {
-    id 'com.android.application'
-    id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp'
-    id 'org.jetbrains.kotlin.plugin.serialization'
-    id 'org.jetbrains.kotlin.plugin.compose'
+    alias libs.plugins.android.application
+    alias libs.plugins.jetbrains.kotlin.android
+    alias libs.plugins.google.dagger.hilt.android
+    alias libs.plugins.google.devtools.ksp
+    alias libs.plugins.jetbrains.kotlin.plugin.serialization
+    alias libs.plugins.jetbrains.kotlin.plugin.compose
 }
 
 android {
     namespace = 'com.theseuntaylor.vane'
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.theseuntaylor.vane"
@@ -51,62 +52,63 @@ android {
 
 dependencies {
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring libs.desugar.jdk.libs
 
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:2.2.10')
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
-    implementation 'androidx.activity:activity-compose:1.9.3'
-    implementation platform('androidx.compose:compose-bom:2024.10.00')
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.material3:material3'
-    implementation 'com.google.android.gms:play-services-location:21.3.0'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    androidTestImplementation platform('androidx.compose:compose-bom:2024.10.00')
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    implementation libs.core.ktx
+    implementation platform(libs.kotlin.bom)
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.activity.compose
+    implementation platform(libs.compose.bom)
+    implementation libs.compose.ui
+    implementation libs.compose.ui.graphics
+    implementation libs.compose.ui.tooling.preview
+    implementation libs.compose.material3
+    implementation libs.compose.material.icons.core
+    implementation libs.compose.material.icons.extended
+    implementation libs.play.services.location
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation platform(libs.compose.bom)
+    androidTestImplementation libs.compose.ui.test.junit4
+    debugImplementation libs.compose.ui.tooling
+    debugImplementation libs.compose.ui.test.manifest
 
     // Material 3 and Navigation Dependencies
-    implementation 'androidx.navigation:navigation-compose:2.8.2'
+    implementation libs.androidx.navigation.compose
 
     // Coil and Coroutines Dependencies
-    implementation 'io.coil-kt:coil-compose:2.4.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation libs.coil.compose
+    implementation libs.kotlinx.coroutines.core
+    implementation libs.kotlinx.coroutines.android
 
     // Retrofit and OkHttp Dependencies
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.11'
-    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11'
+    implementation libs.retrofit
+    implementation libs.converter.gson
+    implementation libs.okhttp
+    implementation libs.logging.interceptor
 
     // Room Dependencies
-    implementation 'androidx.room:room-common:2.8.5'
-    implementation 'androidx.room:room-ktx:2.8.5'
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation libs.androidx.room.common
+    implementation libs.androidx.room.ktx
 
-    ksp 'androidx.room:room-compiler:2.8.5'
-    androidTestImplementation 'androidx.room:room-testing:2.8.5'
+    ksp libs.androidx.room.compiler
+    androidTestImplementation libs.androidx.room.testing
 
     // Hilt Dependencies
-    implementation 'com.google.dagger:hilt-android:2.60.1'
-    ksp 'com.google.dagger:hilt-compiler:2.60.1'
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
 
-    implementation 'androidx.hilt:hilt-work:1.2.0'
-    ksp 'androidx.hilt:hilt-compiler:1.2.0'
-    implementation 'androidx.work:work-runtime-ktx:2.9.1'
+    implementation libs.androidx.hilt.work
+    ksp libs.androidx.hilt.compiler
+    implementation libs.androidx.work.runtime.ktx
 
     // Home screen widget
-    implementation 'androidx.glance:glance-appwidget:1.2.0'
-    implementation 'androidx.glance:glance-material3:1.2.0'
-    implementation 'androidx.hilt:hilt-navigation-compose:1.2.0'
+    implementation libs.glance.appwidget
+    implementation libs.glance.material3
+    implementation libs.androidx.hilt.navigation.compose
 
-    implementation 'com.google.accompanist:accompanist-permissions:0.34.0'
+    implementation libs.accompanist.permissions
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation(libs.kotlinx.serialization.json)
 }
