@@ -34,12 +34,10 @@ fun NavGraphBuilder.addLocationScreen(navController: NavController) {
 }
 
 fun NavGraphBuilder.homeScreen(
-    snackbarHostState: SnackbarHostState,
     navController: NavController
 ) {
     composable<Home> {
         HomeScreen(
-            snackBarHostState = snackbarHostState,
             navigateToDetailedForecast = { favouriteLocation ->
                 navController.navigate(
                     DetailedForecast(
