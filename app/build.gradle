@@ -7,6 +7,14 @@ plugins {
     alias libs.plugins.jetbrains.kotlin.plugin.compose
 }
 
+// Release signing reads keystore.properties (not in Git) at the project root. Without it,
+// release builds are left unsigned. Keys: storeFile, storePassword, keyAlias, keyPassword.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     namespace = 'com.theseuntaylor.vane'
     compileSdk = 37
@@ -27,8 +35,22 @@ android {
         buildConfigField("Long", "REQUEST_TIMEOUT", requestTimeOut)
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            release {
+                storeFile = rootProject.file(keystoreProperties['storeFile'])
+                storePassword = keystoreProperties['storePassword']
+                keyAlias = keystoreProperties['keyAlias']
+                keyPassword = keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.release
+            }
             // R8 shrinks and obfuscates the code; resource shrinking drops what it no longer references.
             minifyEnabled = true
             shrinkResources = true
@@ -50,6 +72,10 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+}
+
+ksp {
+    arg('room.schemaLocation', "$projectDir/schemas")
 }
 
 dependencies {

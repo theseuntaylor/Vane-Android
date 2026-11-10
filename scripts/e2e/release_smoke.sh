@@ -4,7 +4,7 @@
 # Usage: scripts/e2e/release_smoke.sh [emulator-serial]   (after ./gradlew :app:assembleRelease)
 #
 # R8 problems (a missing keep rule) only show up at runtime, so this drives the main flows:
-# 1. Signs the unsigned release APK with the local debug key (same key as debug builds, so it
+# 1. Signs the release APK (unsigned, or signed with keystore.properties) with the local debug key (same key as debug builds, so it
 #    installs over them and keeps their data) and checks the installed app is not debuggable.
 # 2. Home: the current-location forecast loads (Retrofit + Gson through R8).
 # 3. Details: tapping the card opens the details screen with its forecast (navigation arguments).
@@ -18,7 +18,8 @@ set -eu
 SERIAL="${1:-emulator-5554}"
 PKG=com.theseuntaylor.vane
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-UNSIGNED="$ROOT/app/build/outputs/apk/release/app-release-unsigned.apk"
+# app-release.apk when keystore.properties sets up signing, app-release-unsigned.apk otherwise.
+RELEASE=$(ls -t "$ROOT"/app/build/outputs/apk/release/app-release*.apk 2>/dev/null | head -1)
 SDK="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 ADB="$SDK/platform-tools/adb"
 OUT="$ROOT/build/e2e/release-smoke-$(date +%Y%m%d-%H%M%S)"
@@ -58,7 +59,7 @@ tap_node() {
 
 widget_bound() { adb shell dumpsys appwidget | grep -q "provider=ProviderId{.*cmp:ComponentInfo{$PKG/$PKG.feature.widget.ui.VaneWeatherWidgetReceiver}"; }
 
-[ -f "$UNSIGNED" ] || { echo "Build the release APK first: ./gradlew :app:assembleRelease"; exit 1; }
+[ -n "$RELEASE" ] || { echo "Build the release APK first: ./gradlew :app:assembleRelease"; exit 1; }
 mkdir -p "$OUT"
 echo "# Release build smoke E2E — $(date)" > "$OUT/report.md"
 echo "Device: $SERIAL ($(adb shell getprop ro.product.model | tr -d '\r'), API $(adb shell getprop ro.build.version.sdk | tr -d '\r'))" >> "$OUT/report.md"
@@ -66,7 +67,7 @@ echo "Device: $SERIAL ($(adb shell getprop ro.product.model | tr -d '\r'), API $
 step "Sign the release APK with the debug key and install it"
 APKSIGNER=$(ls -d "$SDK"/build-tools/*/apksigner | sort -V | tail -1)
 "$APKSIGNER" sign --ks "$HOME/.android/debug.keystore" --ks-pass pass:android --key-pass pass:android \
-    --ks-key-alias androiddebugkey --out "$APK" "$UNSIGNED"
+    --ks-key-alias androiddebugkey --out "$APK" "$RELEASE"
 echo "APK size: $(wc -c < "$APK" | tr -d ' ') bytes" >> "$OUT/report.md"
 adb install -r "$APK" >/dev/null
 adb shell dumpsys package $PKG | grep -q "pkgFlags=\[.*DEBUGGABLE" && fail "The installed build is debuggable"
