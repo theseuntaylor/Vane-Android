@@ -6,7 +6,7 @@ Generated: `app/src/main/java/com/theseuntaylor/vane/core/theme/Color.kt`, `app/
 
 ## Build
 Gradle picks its own JDK from `gradle/gradle-daemon-jvm.properties` (JDK 17; found locally or downloaded via foojay), so don't set `JAVA_HOME` for builds. To change it: `./gradlew updateDaemonJvm --jvm-version=<N>`.
-AGP 9 built-in Kotlin: there is no `kotlin-android` plugin, and annotation processors use KSP (no kapt). Keep the Compose and serialization plugin versions equal to the Kotlin version AGP uses. Libraries built with a newer Kotlin than that (e.g. kotlinx-serialization 1.10+, kotlin-bom above it) fail to compile; those lines carry a `//noinspection` comment.
+Kotlin comes from the `org.jetbrains.kotlin.android` plugin (`android.builtInKotlin=false`), not AGP's built-in Kotlin, and annotation processors use KSP (no kapt). Versions live in `gradle/libs.versions.toml`; keep the Kotlin, Compose compiler and serialization plugin versions equal.
 
 ## Testing
 E2E check for the home screen widget (app closed + offline): `scripts/e2e/widget_offline.sh [emulator-serial]` after `./gradlew :app:assembleDebug`. Artifacts land in `build/e2e/`.
