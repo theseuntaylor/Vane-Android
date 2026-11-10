@@ -1,13 +1,15 @@
 package com.theseuntaylor.vane.feature.home.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,9 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.theseuntaylor.vane.R
-import com.theseuntaylor.vane.core.components.CenteredLoader
 import com.theseuntaylor.vane.core.components.CityCard
-import com.theseuntaylor.vane.core.components.ShowErrorSnackBar
 import com.theseuntaylor.vane.core.components.TopLoader
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
 
@@ -26,7 +26,6 @@ import com.theseuntaylor.vane.core.navigation.DetailedForecast
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState,
     navigateToDetailedForecast: (DetailedForecast) -> Unit
 ) {
 
@@ -61,18 +60,16 @@ fun HomeScreen(
                         )
                     }
                 )
-
-                Spacer(modifier = modifier.height(10.dp))
             }
 
             is HomeUiState.Error -> {
-                ShowErrorSnackBar(
-                    message = stringResource(state.errorMessage), snackbarHostState = snackBarHostState
-                )
+                SectionMessage(message = state.errorMessage, onRetry = viewModel::loadCurrentLocationForecast)
             }
         }
 
-        if (favouriteLocations.isNotEmpty()) Text(
+        Spacer(modifier = modifier.height(16.dp))
+
+        Text(
             text = stringResource(R.string.favourite_locations),
             style = MaterialTheme.typography.titleLarge,
         )
@@ -80,7 +77,11 @@ fun HomeScreen(
         when (val state = favouritesUiState) {
 
             is FavouritesUiState.Initial, FavouritesUiState.Loading -> {
-                CenteredLoader()
+                TopLoader()
+            }
+
+            is FavouritesUiState.Empty -> {
+                SectionMessage(message = R.string.favourites_empty)
             }
 
             is FavouritesUiState.Success -> {
@@ -105,9 +106,24 @@ fun HomeScreen(
             }
 
             is FavouritesUiState.Error -> {
-                ShowErrorSnackBar(
-                    message = stringResource(state.errorMessage), snackbarHostState = snackBarHostState
-                )
+                SectionMessage(message = state.errorMessage, onRetry = viewModel::loadFavourites)
+            }
+        }
+    }
+}
+
+/** A message in place of a section's content, with a "Try again" button when [onRetry] is given. */
+@Composable
+private fun SectionMessage(@StringRes message: Int, onRetry: (() -> Unit)? = null) {
+    Column(modifier = Modifier.padding(top = 8.dp)) {
+        Text(
+            text = stringResource(message),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (onRetry != null) {
+            TextButton(onClick = onRetry) {
+                Text(stringResource(R.string.try_again))
             }
         }
     }
