@@ -13,6 +13,7 @@ import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
 import com.theseuntaylor.vane.feature.widget.data.FavouriteWeather
 import com.theseuntaylor.vane.feature.widget.data.WidgetWeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -97,28 +98,33 @@ class HomeViewModel @Inject constructor(
             }
     }
 
+    private var favouritesJob: Job? = null
+    private var favouriteForecastsJob: Job? = null
+
     private fun getFavouriteLocations() {
-        viewModelScope.launch {
+        favouritesJob?.cancel()
+        // Room emits again whenever a favourite is added, so the list stays current without a restart.
+        favouritesJob = viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations()
                 .collect {
+                    // A newer list replaces any forecast request still running for the old one.
+                    favouriteForecastsJob?.cancel()
                     if (it.isNotEmpty()) {
-
-                        // todo: map each entity to the ui model (response + city name)
-
                         favouriteLocations.value = it.toMutableList()
-                        getWeatherForecastForFavouriteLocations(it)
+                        favouriteForecastsJob = getWeatherForecastForFavouriteLocations(it)
                     } else {
+                        favouriteLocations.value = mutableListOf()
                         _favouriteUiState.value = FavouritesUiState.Empty
                     }
                 }
         }
     }
 
-    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>) {
+    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>): Job {
         var longitudeString = ""
         var latitudeString = ""
 
-        viewModelScope.launch {
+        return viewModelScope.launch {
 
             for (favouriteLocation in favouriteLocationsEntities) {
                 longitudeString += "${favouriteLocation.longitude},"
