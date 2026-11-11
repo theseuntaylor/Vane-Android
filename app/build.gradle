@@ -7,6 +7,14 @@ plugins {
     alias libs.plugins.jetbrains.kotlin.plugin.compose
 }
 
+// Release signing reads keystore.properties (not in Git) at the project root. Without it,
+// release builds are left unsigned. Keys: storeFile, storePassword, keyAlias, keyPassword.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     namespace = 'com.theseuntaylor.vane'
     compileSdk = 37
@@ -27,9 +35,25 @@ android {
         buildConfigField("Long", "REQUEST_TIMEOUT", requestTimeOut)
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            release {
+                storeFile = rootProject.file(keystoreProperties['storeFile'])
+                storePassword = keystoreProperties['storePassword']
+                keyAlias = keystoreProperties['keyAlias']
+                keyPassword = keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled = false
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.release
+            }
+            // R8 shrinks and obfuscates the code; resource shrinking drops what it no longer references.
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -50,6 +74,10 @@ android {
     }
 }
 
+ksp {
+    arg('room.schemaLocation', "$projectDir/schemas")
+}
+
 dependencies {
 
     coreLibraryDesugaring libs.desugar.jdk.libs
@@ -63,8 +91,6 @@ dependencies {
     implementation libs.compose.ui.graphics
     implementation libs.compose.ui.tooling.preview
     implementation libs.compose.material3
-    implementation libs.compose.material.icons.core
-    implementation libs.compose.material.icons.extended
     implementation libs.play.services.location
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
@@ -78,7 +104,6 @@ dependencies {
     implementation libs.androidx.navigation.compose
 
     // Coil and Coroutines Dependencies
-    implementation libs.coil.compose
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.coroutines.android
 
@@ -108,7 +133,6 @@ dependencies {
     implementation libs.glance.material3
     implementation libs.androidx.hilt.navigation.compose
 
-    implementation libs.accompanist.permissions
 
     implementation(libs.kotlinx.serialization.json)
 }

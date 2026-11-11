@@ -3,6 +3,7 @@ package com.theseuntaylor.vane.feature.widget.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -37,11 +38,11 @@ class WidgetWeatherStore @Inject constructor(
     fun readState() = WidgetState(current = read(), favourites = readFavourites())
 
     fun save(snapshot: WidgetWeatherSnapshot) {
-        preferences.edit().putString(KEY_SNAPSHOT, json.encodeToString(snapshot)).apply()
+        preferences.edit { putString(KEY_SNAPSHOT, json.encodeToString(snapshot)) }
     }
 
     fun saveFavourites(favourites: List<FavouriteWeather>) {
-        preferences.edit().putString(KEY_FAVOURITES, json.encodeToString(favourites)).apply()
+        preferences.edit { putString(KEY_FAVOURITES, json.encodeToString(favourites)) }
     }
 
     fun observe(): Flow<WidgetState> = callbackFlow {
