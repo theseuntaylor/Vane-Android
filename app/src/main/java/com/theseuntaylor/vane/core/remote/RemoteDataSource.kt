@@ -1,8 +1,11 @@
 package com.theseuntaylor.vane.core.remote
 
+import com.theseuntaylor.vane.core.remote.model.PrecipitationNowcast
 import com.theseuntaylor.vane.core.remote.model.WeatherForecastResponse
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface RemoteDataSource {
     @GET("v1/forecast")
@@ -27,5 +30,21 @@ interface RemoteDataSource {
         @Query("daily") daily: String = "temperature_2m_max,temperature_2m_min",
         @Query("timezone") timezone: String = "auto",
     ): List<WeatherForecastResponse>
+
+    /**
+     * The next 2 hours in 15-minute slots, starting with the current slot. [url] is the full
+     * forecast URL, so debug builds can point this one request at a test server. Skips the HTTP
+     * cache: an alert must not come from a forecast that is already out of date.
+     */
+    @GET
+    suspend fun getPrecipitationNowcast(
+        @Url url: String,
+        @Query("latitude") latitude: String,
+        @Query("longitude") longitude: String,
+        @Query("minutely_15") minutely15: String = "weather_code,snowfall",
+        @Query("forecast_minutely_15") slots: Int = 8,
+        @Query("timezone") timezone: String = "auto",
+        @Header("Cache-Control") cacheControl: String = "no-cache",
+    ): PrecipitationNowcast
 
 }

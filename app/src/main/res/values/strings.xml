@@ -35,6 +35,20 @@
     <string name="allow_location">Allow location</string>
     <string name="open_settings">Open settings</string>
 
+    <!-- Rain and snow alerts -->
+    <string name="rain_alerts_title">Rain and snow alerts</string>
+    <string name="rain_alerts_body">Get a notification about an hour before it rains or snows where you last opened Vane.</string>
+    <string name="rain_alerts_notifications_blocked">Notifications are off for Vane. Allow them in Settings to get alerts.</string>
+    <string name="alert_channel_name">Rain and snow alerts</string>
+    <string name="alert_channel_description">About an hour before rain, snow or a thunderstorm starts.</string>
+    <string name="alert_rain_title">Rain from about %1$s</string>
+    <string name="alert_snow_title">Snow from about %1$s</string>
+    <string name="alert_thunderstorm_title">Thunderstorms from about %1$s</string>
+    <plurals name="alert_body">
+        <item quantity="one">Expected in %1$s in about %2$d minute.</item>
+        <item quantity="other">Expected in %1$s in about %2$d minutes.</item>
+    </plurals>
+
     <!-- Location names -->
     <string name="geocoder_unavailable">Service not available for your device.</string>
     <string name="location_name_unavailable">Error getting your current Location :(</string>
