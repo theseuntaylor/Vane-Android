@@ -39,6 +39,9 @@ adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION
 adb shell cmd location set-location-enabled false
 adb logcat -c
 start_vane -S
+# Play services may warn that device location is off; that dialog hides the app from the UI dump.
+sleep 3
+ui | grep -q 'text="No location access"' && tap_node 'text="Close"' && sleep 1
 wait_for "$HOME_TITLE" || { shot 1-location-off; fail "Home screen never opened (1-location-off.png)"; }
 wait_for "$LOCATION_OFF" 15 || { shot 1-location-off; fail "No 'location is off' message within 15 s (1-location-off.png)"; }
 ui | grep -qE "$TRY_AGAIN" || { shot 1-location-off; fail "No 'Try again' button (1-location-off.png)"; }

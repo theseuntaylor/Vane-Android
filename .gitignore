@@ -19,5 +19,9 @@
 local.properties
 
 docs/DECISIONS.md
+# Release signing: never commit the keystore or its passwords.
+/keystore.properties
+*.jks
+*.keystore
 design/node_modules/
 /.idea/*
