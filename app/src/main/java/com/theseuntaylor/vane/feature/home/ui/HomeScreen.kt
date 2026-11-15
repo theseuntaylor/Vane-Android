@@ -21,6 +21,7 @@ import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.TopLoader
 import com.theseuntaylor.vane.core.navigation.DetailedForecast
+import com.theseuntaylor.vane.feature.alerts.ui.RainAlertsSwitch
 
 @Composable
 fun HomeScreen(
@@ -66,6 +67,8 @@ fun HomeScreen(
                 SectionMessage(message = state.errorMessage, onRetry = viewModel::loadCurrentLocationForecast)
             }
         }
+
+        RainAlertsSwitch(modifier = Modifier.padding(top = 8.dp))
 
         Spacer(modifier = modifier.height(16.dp))
 

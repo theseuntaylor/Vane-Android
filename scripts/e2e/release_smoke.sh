@@ -9,10 +9,11 @@
 # 2. Home: the current-location forecast loads (Retrofit + Gson through R8).
 # 3. Details: tapping the card opens the details screen with its forecast (navigation arguments).
 # 4. Add location: searching "Paris" lists results (Geocoder).
-# 5. Widget: if a Vane widget is on the home screen, it shows a temperature (Glance).
-# 6. Logcat has no OkHttp request or response lines, no widget snapshot error (kotlinx serialization),
+# 5. Rain and snow alerts: turning them on reads the 15-minute forecast (Gson model through R8), then off again.
+# 6. Widget: if a Vane widget is on the home screen, it shows a temperature (Glance).
+# 7. Logcat has no OkHttp request or response lines, no widget snapshot error (kotlinx serialization),
 #    and no Vane crash.
-# 7. Writes screenshots and a report to build/e2e/release-smoke-<timestamp>/.
+# 8. Writes screenshots and a report to build/e2e/release-smoke-<timestamp>/.
 set -eu
 
 SERIAL="${1:-emulator-5554}"
@@ -94,6 +95,24 @@ shot 2-details
 pass "details screen shows its forecast (2-details.png)"
 adb shell input keyevent BACK
 wait_for "$HOME_TITLE" || fail "Back didn't return to the home screen"
+
+step "Rain and snow alerts: the check reads the real 15-minute forecast"
+ALERTS_SWITCH='checkable="true"'
+adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+if ui | grep -qE "$ALERTS_SWITCH checked=\"false\""; then
+    tap_node "$ALERTS_SWITCH" || fail "Couldn't tap the alerts switch"
+    i=0
+    # Any outcome line means the response parsed; "check failed" means it didn't.
+    until adb logcat -d -s RainAlerts:* | grep -qE "No rain or snow|Already raining|Already alerted|Posted|check failed"; do
+        i=$((i + 1)); [ $i -gt 30 ] && fail "The alerts check never ran (see logcat)"
+        sleep 1
+    done
+    adb logcat -d -s RainAlerts:* | grep -q "check failed" && fail "The alerts check failed after R8 (see logcat.txt)"
+    tap_node "$ALERTS_SWITCH"   # back off, as it was
+    pass "turning alerts on reads the 15-minute forecast after R8: $(adb logcat -d -s RainAlerts:I | grep -oE 'RainAlerts: .*' | tail -1)"
+else
+    echo "- SKIP: rain and snow alerts were already on; left as they were" >> "$OUT/report.md"
+fi
 
 step "Add location: search for Paris"
 tap_node 'content-desc="Plus button for adding a new location"' || fail "Couldn't tap the add button"
