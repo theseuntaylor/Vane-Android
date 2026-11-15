@@ -41,10 +41,8 @@ class GetWeatherForecastUseCase @Inject constructor(
             )
         }
 
+    /** The saved favourites, updated whenever one is added or removed. */
     fun invokeGetFavouriteLocations(): Flow<List<FavouriteLocationsEntity>> =
-        flow {
-            val favouriteLocations = favouriteLocationRepository.getFavouriteLocations()
-            emit(favouriteLocations)
-        }
+        favouriteLocationRepository.observeFavouriteLocations()
 
 }

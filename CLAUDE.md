@@ -6,12 +6,18 @@ Generated: `app/src/main/java/com/theseuntaylor/vane/core/theme/Color.kt`, `app/
 
 ## Build
 Gradle picks its own JDK from `gradle/gradle-daemon-jvm.properties` (JDK 17; found locally or downloaded via foojay), so don't set `JAVA_HOME` for builds. To change it: `./gradlew updateDaemonJvm --jvm-version=<N>`.
-AGP 9 built-in Kotlin: there is no `kotlin-android` plugin, and annotation processors use KSP (no kapt). Keep the Compose and serialization plugin versions equal to the Kotlin version AGP uses.
+Kotlin comes from the `org.jetbrains.kotlin.android` plugin (`android.builtInKotlin=false`), not AGP's built-in Kotlin, and annotation processors use KSP (no kapt). Versions live in `gradle/libs.versions.toml`; keep the Kotlin, Compose compiler and serialization plugin versions equal.
 
 ## Testing
 E2E check for the home screen widget (app closed + offline): `scripts/e2e/widget_offline.sh [emulator-serial]` after `./gradlew :app:assembleDebug`. Artifacts land in `build/e2e/`.
 E2E check that the build selects the daemon JDK regardless of the shell's Java: `scripts/e2e/daemon_toolchain.sh`.
-E2E check that the release bundle is signed from the environment (throwaway keystore): `scripts/e2e/release_signing.sh`.
+E2E check that the home screen shows a cached forecast offline: `scripts/e2e/home_offline.sh [emulator-serial]`.
+E2E check of the location permission flow (denials, Settings, approximate only): `scripts/e2e/location_permission.sh [emulator-serial]`.
+E2E check that the home screen leaves its spinners when location is off and recovers with "Try again": `scripts/e2e/home_states.sh [emulator-serial]`.
+E2E check that adding a favourite shows it on the home screen at once and after a restart (backs up and restores the app's database): `scripts/e2e/add_favourite.sh [emulator-serial]`.
+Set `APK=<path>` on those four to test another build, e.g. one from master.
+E2E check of the minified release build (signed with the local debug key): `scripts/e2e/release_smoke.sh [emulator-serial]` after `./gradlew :app:assembleRelease`.
+E2E check that the release bundle is signed from `keystore.properties` (throwaway keystore): `scripts/e2e/release_signing.sh`.
 
 ## Release
 Pushing a tag such as `v1.2.0` runs `.github/workflows/release.yml`: it builds a signed bundle and uploads it to the Play internal track. Don't bump the version by hand: the workflow sets `versionName` from the tag and `versionCode` to master's value plus one (`scripts/ci/set_version.sh`), then commits both to `master` once Play accepts the bundle.

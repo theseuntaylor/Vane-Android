@@ -15,6 +15,8 @@ class FavouriteLocationRepository @Inject constructor(
 
     suspend fun getFavouriteLocations() = locationsDao.getFavouriteLocations()
 
+    fun observeFavouriteLocations() = locationsDao.observeFavouriteLocations()
+
     suspend fun deleteFavouriteLocation() {}
 
     suspend fun deleteAllFavouriteLocations() {}

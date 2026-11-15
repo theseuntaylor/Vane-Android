@@ -32,49 +32,57 @@ class NetworkModule {
     fun provideRemoteDataSource(retrofit: Retrofit): RemoteDataSource =
         retrofit.create(RemoteDataSource::class.java)
 
-    @Provides
-    @Singleton
-    fun provideInterceptor(@ApplicationContext context: Context) = Interceptor { chain ->
-        val originalRequest = chain.request()
+    /**
+     * Open-Meteo sends no cache headers, so OkHttp would never reuse a response.
+     * Runs only for requests that reach the network: marks responses fresh for 15 minutes.
+     */
+    private val cacheForecastsInterceptor = Interceptor { chain ->
+        chain.proceed(chain.request())
+            .newBuilder()
+            .header("Cache-Control", CacheControl.Builder().maxAge(15, TimeUnit.MINUTES).build().toString())
+            .removeHeader("Pragma")
+            .build()
+    }
 
+    /**
+     * Runs for every request, before the cache: when offline, serve a cached forecast up to a day old
+     * instead of trying the network. Network interceptors can't do this, because OkHttp skips them offline.
+     */
+    private fun offlineCacheInterceptor(context: Context) = Interceptor { chain ->
         val request = if (hasNetwork(context)) {
-            originalRequest
-                .newBuilder()
-                .cacheControl(
-                    CacheControl.Builder().maxAge(15, TimeUnit.MINUTES).build()
-                )
+            chain.request()
         } else {
-            originalRequest
+            chain.request()
                 .newBuilder()
-                .cacheControl(
-                    CacheControl.Builder().maxStale(1, TimeUnit.DAYS).build()
-                )
+                .cacheControl(CacheControl.Builder().onlyIfCached().maxStale(1, TimeUnit.DAYS).build())
+                .build()
         }
-
-        chain.proceed(request.build())
+        chain.proceed(request)
     }
 
     @Provides
     @Singleton
-    fun provideHttpClient(interceptor: Interceptor, okHttpCache: Cache): OkHttpClient {
-        return builder(interceptor).cache(okHttpCache).build()
+    fun provideHttpClient(@ApplicationContext context: Context, okHttpCache: Cache): OkHttpClient {
+        return builder(context).cache(okHttpCache).build()
     }
 
     @Provides
     @Singleton
     fun provideOkHttpCache(@ApplicationContext context: Context): Cache = Cache(context.cacheDir, cacheSize)
 
-    private fun builder(interceptor: Interceptor): OkHttpClient.Builder {
+    private fun builder(context: Context): OkHttpClient.Builder {
         return OkHttpClient.Builder()
             .readTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(BuildConfig.REQUEST_TIMEOUT, TimeUnit.SECONDS)
-            .addInterceptor(
-                HttpLoggingInterceptor()
-                    .setLevel(HttpLoggingInterceptor.Level.HEADERS)
-                    .setLevel(HttpLoggingInterceptor.Level.BODY)
-            )
-            .addNetworkInterceptor(interceptor)
+            .apply {
+                // Full request and response logging is for debugging only; release builds log nothing.
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                }
+            }
+            .addInterceptor(offlineCacheInterceptor(context))
+            .addNetworkInterceptor(cacheForecastsInterceptor)
     }
 
     @Provides

@@ -55,18 +55,29 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Decode keystore
+      # app/build.gradle signs the release build when keystore.properties exists.
+      # Backslashes are doubled because the file is read as Java properties.
+      - name: Set up release signing
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
-
-      - name: Build signed bundle
-        env:
-          KEYSTORE_FILE: ${{ runner.temp }}/release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          {
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/release.jks"
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } | sed 's/\\/\\\\/g' > keystore.properties
+
+      - name: Build signed bundle
         run: ./gradlew :app:bundleRelease
+
+      # An unsigned bundle means signing was not picked up; stop before Play sees it.
+      - name: Check the bundle is signed
+        run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab 2>&1 | grep -q "jar verified"
 
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
@@ -94,6 +105,6 @@ jobs:
           git commit -m "Bumped version to $VERSION_NAME ($VERSION_CODE) after the $GITHUB_REF_NAME release." app/build.gradle
           git push origin master
 
-      - name: Remove keystore
+      - name: Remove signing files
         if: always()
-        run: rm -f "$RUNNER_TEMP/release.jks"
+        run: rm -f "$RUNNER_TEMP/release.jks" keystore.properties

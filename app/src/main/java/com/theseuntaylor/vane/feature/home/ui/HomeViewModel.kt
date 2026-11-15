@@ -1,25 +1,19 @@
 package com.theseuntaylor.vane.feature.home.ui
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.location.Geocoder
-import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.Priority
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
-import com.theseuntaylor.vane.core.utils.findAddress
-import com.theseuntaylor.vane.feature.home.data.model.LatAndLong
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
+import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationRepository
+import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationResult
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
 import com.theseuntaylor.vane.feature.widget.data.FavouriteWeather
 import com.theseuntaylor.vane.feature.widget.data.WidgetWeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,10 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val weatherForecastUseCase: GetWeatherForecastUseCase,
-    private val geocoder: Geocoder,
-    private val fusedLocationProviderClient: FusedLocationProviderClient,
+    private val currentLocationRepository: CurrentLocationRepository,
     private val widgetWeatherRepository: WidgetWeatherRepository,
 ) : ViewModel() {
 
@@ -46,17 +38,8 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Initial)
     val uiState: StateFlow<HomeUiState> = _uiState
-        .onStart {
-            getCurrentLocation { lat, long, currentLocation ->
-                val location = LatAndLong(lat, long)
-
-                getWeatherForecastForCurrentLocation(
-                    longitude = location.longitude,
-                    latitude = location.latitude,
-                    currentLocation = currentLocation
-                )
-            }
-        }.stateIn(
+        .onStart { loadCurrentLocationForecast() }
+        .stateIn(
             viewModelScope,
             initialValue = HomeUiState.Initial,
             started = SharingStarted.WhileSubscribed(5000)
@@ -67,6 +50,29 @@ class HomeViewModel @Inject constructor(
 
     // we need both the list and the state??
     var favouriteLocations = MutableStateFlow(mutableListOf<FavouriteLocationsEntity>())
+
+    /** Finds the device's location and loads its forecast. Also used by the "Try again" button. */
+    fun loadCurrentLocationForecast() {
+        _uiState.value = HomeUiState.Loading
+        viewModelScope.launch {
+            when (val location = currentLocationRepository.currentLocation()) {
+                is CurrentLocationResult.LocationOff ->
+                    _uiState.value = HomeUiState.Error(R.string.error_location_off)
+
+                is CurrentLocationResult.NotFound ->
+                    _uiState.value = HomeUiState.Error(R.string.error_current_location_not_found)
+
+                is CurrentLocationResult.Found -> getWeatherForecastForCurrentLocation(
+                    longitude = location.longitude,
+                    latitude = location.latitude,
+                    currentLocation = location.name,
+                )
+            }
+        }
+    }
+
+    /** Reloads the saved locations and their forecasts. Also used by the "Try again" button. */
+    fun loadFavourites() = getFavouriteLocations()
 
     private fun getWeatherForecastForCurrentLocation(
         longitude: Double,
@@ -92,87 +98,33 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    private suspend fun getLocationFromCoordinates(long: Double, lat: Double): String {
-        if (!Geocoder.isPresent()) {
-            return context.getString(R.string.geocoder_unavailable)
-        }
-
-        val address = geocoder.findAddress(latitude = lat, longitude = long)
-
-        return address?.subAdminArea
-            ?: address?.countryName
-            ?: context.getString(R.string.location_name_unavailable)
-    }
-
-    @SuppressLint("MissingPermission")
-    fun getCurrentLocation(callback: (Double, Double, String) -> Unit) {
-        fusedLocationProviderClient.lastLocation
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    onLocationFound(location, callback)
-                } else {
-                    // No cached fix (e.g. right after a reboot): ask for a fresh one.
-                    requestFreshLocation(callback)
-                }
-            }
-            .addOnFailureListener { exception ->
-                exception.printStackTrace()
-            }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun requestFreshLocation(callback: (Double, Double, String) -> Unit) {
-        fusedLocationProviderClient
-            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    onLocationFound(location, callback)
-                } else {
-                    _uiState.value = HomeUiState.Error(R.string.error_current_location_not_found)
-                }
-            }
-            .addOnFailureListener { exception ->
-                exception.printStackTrace()
-            }
-    }
-
-    private fun onLocationFound(location: Location, callback: (Double, Double, String) -> Unit) {
-        viewModelScope.launch {
-            val locationFromCoordinates = getLocationFromCoordinates(
-                long = location.longitude,
-                lat = location.latitude
-            )
-            callback(location.latitude, location.longitude, locationFromCoordinates)
-        }
-    }
+    private var favouritesJob: Job? = null
+    private var favouriteForecastsJob: Job? = null
 
     private fun getFavouriteLocations() {
-        viewModelScope.launch {
+        favouritesJob?.cancel()
+        // Room emits again whenever a favourite is added, so the list stays current without a restart.
+        favouritesJob = viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations()
-                .onStart {
-                    // favouriteLocations.value.clear()
-                    Log.e("TAG", "Get favourite location started!!!!")
-                }
                 .collect {
+                    // A newer list replaces any forecast request still running for the old one.
+                    favouriteForecastsJob?.cancel()
                     if (it.isNotEmpty()) {
-
-                        // todo: map each entity to the ui model (response + city name)
-
                         favouriteLocations.value = it.toMutableList()
-                        getWeatherForecastForFavouriteLocations(it)
+                        favouriteForecastsJob = getWeatherForecastForFavouriteLocations(it)
                     } else {
-                        _favouriteUiState.value =
-                            FavouritesUiState.Error(R.string.error_no_saved_locations)
+                        favouriteLocations.value = mutableListOf()
+                        _favouriteUiState.value = FavouritesUiState.Empty
                     }
                 }
         }
     }
 
-    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>) {
+    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>): Job {
         var longitudeString = ""
         var latitudeString = ""
 
-        viewModelScope.launch {
+        return viewModelScope.launch {
 
             for (favouriteLocation in favouriteLocationsEntities) {
                 longitudeString += "${favouriteLocation.longitude},"
