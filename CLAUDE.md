@@ -18,3 +18,7 @@ E2E check that adding a favourite shows it on the home screen at once and after 
 E2E check of rain and snow alerts against canned forecasts (declined permission, dry, already raining, snow in an hour, no repeat alert): `scripts/e2e/rain_alerts.sh [emulator-serial]`. Needs `python3`; debug builds read the alert forecast's base URL from `files/e2e-alerts-base-url`.
 Set `APK=<path>` on those five to test another build, e.g. one from master.
 E2E check of the minified release build (signed with the local debug key): `scripts/e2e/release_smoke.sh [emulator-serial]` after `./gradlew :app:assembleRelease`.
+E2E check that the release bundle is signed from `keystore.properties` (throwaway keystore): `scripts/e2e/release_signing.sh`.
+
+## Release
+Pushing a tag such as `v1.2.0` runs `.github/workflows/release.yml`: it builds a signed bundle and uploads it to the Play internal track. Don't bump the version by hand: the workflow sets `versionName` from the tag and `versionCode` to master's value plus one (`scripts/ci/set_version.sh`), then commits both to `master` once Play accepts the bundle.

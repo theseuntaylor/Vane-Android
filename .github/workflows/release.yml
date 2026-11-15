@@ -1,0 +1,110 @@
+# Builds a signed release bundle and uploads it to Google Play when a version tag is pushed.
+#
+# To release: git tag v1.2.0 && git push origin v1.2.0
+# versionName comes from the tag and versionCode is master's value plus one. After Play accepts
+# the bundle, both are committed back to master.
+#
+# Repository secrets used: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD,
+# SERVICE_ACCOUNT_JSON (the Play service account key as plain JSON).
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Needed to push the version bump to master.
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Builds the tagged commit. Full history so master is available for the version bump.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set versionName from tag and increment versionCode
+        run: |
+          version_name="${GITHUB_REF_NAME#v}"
+          current=$(git show origin/master:app/build.gradle \
+            | sed -n -E 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*([0-9]+)[[:space:]]*$/\1/p')
+          if [ -z "$current" ]; then
+            echo "::error::Could not find versionCode in app/build.gradle on master"
+            exit 1
+          fi
+          version_code=$((current + 1))
+          echo "versionCode $current -> $version_code, versionName $version_name"
+          scripts/ci/set_version.sh "$version_code" "$version_name"
+          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+
+      # Only runs the Gradle launcher; the build itself uses the JDK from
+      # gradle/gradle-daemon-jvm.properties.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # app/build.gradle signs the release build when keystore.properties exists.
+      # Backslashes are doubled because the file is read as Java properties.
+      - name: Set up release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          {
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/release.jks"
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } | sed 's/\\/\\\\/g' > keystore.properties
+
+      - name: Build signed bundle
+        run: ./gradlew :app:bundleRelease
+
+      # An unsigned bundle means signing was not picked up; stop before Play sees it.
+      - name: Check the bundle is signed
+        run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab 2>&1 | grep -q "jar verified"
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.theseuntaylor.vane
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app-release-${{ github.ref_name }}
+          path: app/build/outputs/bundle/release/app-release.aab
+
+      # Runs only after Play accepted the bundle, so master never records a version that was not released.
+      - name: Commit version bump to master
+        run: |
+          git checkout -- app/build.gradle
+          git fetch origin master
+          git checkout -B master origin/master
+          scripts/ci/set_version.sh "$VERSION_CODE" "$VERSION_NAME"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Bumped version to $VERSION_NAME ($VERSION_CODE) after the $GITHUB_REF_NAME release." app/build.gradle
+          git push origin master
+
+      - name: Remove signing files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks" keystore.properties
