@@ -11,3 +11,7 @@ AGP 9 built-in Kotlin: there is no `kotlin-android` plugin, and annotation proce
 ## Testing
 E2E check for the home screen widget (app closed + offline): `scripts/e2e/widget_offline.sh [emulator-serial]` after `./gradlew :app:assembleDebug`. Artifacts land in `build/e2e/`.
 E2E check that the build selects the daemon JDK regardless of the shell's Java: `scripts/e2e/daemon_toolchain.sh`.
+E2E check that the release bundle is signed from the environment (throwaway keystore): `scripts/e2e/release_signing.sh`.
+
+## Release
+Pushing a tag such as `v1.2.0` runs `.github/workflows/release.yml`: it builds a signed bundle and uploads it to the Play internal track. Don't bump the version by hand: the workflow sets `versionName` from the tag and `versionCode` to master's value plus one (`scripts/ci/set_version.sh`), then commits both to `master` once Play accepts the bundle.

@@ -27,8 +27,25 @@ android {
         buildConfigField("Long", "REQUEST_TIMEOUT", requestTimeOut)
     }
 
+    // Release signing comes from the environment (.github/workflows/release.yml sets it).
+    // Without KEYSTORE_FILE, release builds stay unsigned so local builds need no keystore.
+    def releaseKeystore = System.getenv("KEYSTORE_FILE")
+    signingConfigs {
+        if (releaseKeystore) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (releaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
