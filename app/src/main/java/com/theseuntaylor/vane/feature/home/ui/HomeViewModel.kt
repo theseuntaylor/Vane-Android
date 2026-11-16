@@ -4,22 +4,16 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theseuntaylor.vane.R
-import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
-import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
 import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationRepository
 import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationResult
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
-import com.theseuntaylor.vane.feature.widget.data.FavouriteWeather
 import com.theseuntaylor.vane.feature.widget.data.WidgetWeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,10 +26,6 @@ class HomeViewModel @Inject constructor(
     private val widgetWeatherRepository: WidgetWeatherRepository,
 ) : ViewModel() {
 
-    init {
-        getFavouriteLocations()
-    }
-
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Initial)
     val uiState: StateFlow<HomeUiState> = _uiState
         .onStart { loadCurrentLocationForecast() }
@@ -44,12 +34,6 @@ class HomeViewModel @Inject constructor(
             initialValue = HomeUiState.Initial,
             started = SharingStarted.WhileSubscribed(5000)
         )
-
-    private val _favouriteUiState = MutableStateFlow<FavouritesUiState>(FavouritesUiState.Initial)
-    val favouriteUiState: StateFlow<FavouritesUiState> = _favouriteUiState.asStateFlow()
-
-    // we need both the list and the state??
-    var favouriteLocations = MutableStateFlow(mutableListOf<FavouriteLocationsEntity>())
 
     /** Finds the device's location and loads its forecast. Also used by the "Try again" button. */
     fun loadCurrentLocationForecast() {
@@ -71,9 +55,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /** Reloads the saved locations and their forecasts. Also used by the "Try again" button. */
-    fun loadFavourites() = getFavouriteLocations()
-
     private fun getWeatherForecastForCurrentLocation(
         longitude: Double,
         latitude: Double,
@@ -90,103 +71,12 @@ class HomeViewModel @Inject constructor(
             }
             .collect {
                 _uiState.value = HomeUiState.Success(
-                    it.toUiModel().copy(currentLocation = currentLocation)
+                    data = it.toUiModel().copy(currentLocation = currentLocation),
+                    forecast = it,
                 )
                 // Widget caching must never break the home screen.
                 runCatching { widgetWeatherRepository.onCurrentLocationForecast(it, currentLocation) }
                     .onFailure { e -> Log.e("HomeViewModel", "Couldn't update widget", e) }
             }
-    }
-
-    private var favouritesJob: Job? = null
-    private var favouriteForecastsJob: Job? = null
-
-    private fun getFavouriteLocations() {
-        favouritesJob?.cancel()
-        // Room emits again whenever a favourite is added, so the list stays current without a restart.
-        favouritesJob = viewModelScope.launch {
-            weatherForecastUseCase.invokeGetFavouriteLocations()
-                .collect {
-                    // A newer list replaces any forecast request still running for the old one.
-                    favouriteForecastsJob?.cancel()
-                    if (it.isNotEmpty()) {
-                        favouriteLocations.value = it.toMutableList()
-                        favouriteForecastsJob = getWeatherForecastForFavouriteLocations(it)
-                    } else {
-                        favouriteLocations.value = mutableListOf()
-                        _favouriteUiState.value = FavouritesUiState.Empty
-                    }
-                }
-        }
-    }
-
-    private fun getWeatherForecastForFavouriteLocations(favouriteLocationsEntities: List<FavouriteLocationsEntity>): Job {
-        var longitudeString = ""
-        var latitudeString = ""
-
-        return viewModelScope.launch {
-
-            for (favouriteLocation in favouriteLocationsEntities) {
-                longitudeString += "${favouriteLocation.longitude},"
-                latitudeString += "${favouriteLocation.latitude},"
-            }
-
-            if (favouriteLocationsEntities.size == 1) {
-                weatherForecastUseCase.invokeCurrentLocationWeatherForecast(
-                    longitude = longitudeString,
-                    latitude = latitudeString,
-                    forecastDays = 7
-                ).onStart {
-                    _favouriteUiState.value = FavouritesUiState.Loading
-                }.catch {
-                    Log.e("HomeViewModel", "Couldn't load favourite forecasts", it)
-                    _favouriteUiState.value =
-                        FavouritesUiState.Error(R.string.error_loading_forecasts)
-                }.map { response ->
-                    response.toUiModel()
-                }.collect { response ->
-                    _favouriteUiState.value = FavouritesUiState.Success(
-                        data = mutableListOf(response)
-                    )
-                    cacheFavouritesForWidget(favouriteLocationsEntities, listOf(response))
-                }
-            } else {
-                weatherForecastUseCase.invokeFavouriteLocationsWeatherForecast(
-                    longitude = longitudeString,
-                    latitude = latitudeString,
-                ).onStart {
-                    _favouriteUiState.value = FavouritesUiState.Loading
-                }.catch {
-                    Log.e("HomeViewModel", "Couldn't load favourite forecasts", it)
-                    _favouriteUiState.value =
-                        FavouritesUiState.Error(R.string.error_loading_forecasts)
-                }.map { response ->
-                    response.map { it.toUiModel() }
-                }.collect { response ->
-                    _favouriteUiState.value = FavouritesUiState.Success(
-                        data = response.toMutableList()
-                    )
-                    cacheFavouritesForWidget(favouriteLocationsEntities, response)
-                }
-            }
-        }
-    }
-
-    private suspend fun cacheFavouritesForWidget(
-        entities: List<FavouriteLocationsEntity>,
-        forecasts: List<WeatherForecastUiModel>,
-    ) {
-        val favourites = entities.zip(forecasts) { entity, forecast ->
-            FavouriteWeather(
-                name = entity.name,
-                temperature = forecast.currentTemperature,
-                weatherCode = forecast.current.weatherCode,
-                high = forecast.todayHighAndLow?.first,
-                low = forecast.todayHighAndLow?.second,
-            )
-        }
-        // Widget caching must never break the home screen.
-        runCatching { widgetWeatherRepository.onFavouritesForecast(favourites) }
-            .onFailure { e -> Log.e("HomeViewModel", "Couldn't update widget favourites", e) }
     }
 }

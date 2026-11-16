@@ -6,10 +6,12 @@
 # R8 problems (a missing keep rule) only show up at runtime, so this drives the main flows:
 # 1. Signs the release APK (unsigned, or signed with keystore.properties) with the local debug key (same key as debug builds, so it
 #    installs over them and keeps their data) and checks the installed app is not debuggable.
-# 2. Home: the current-location forecast loads (Retrofit + Gson through R8).
-# 3. Details: tapping the card opens the details screen with its forecast (navigation arguments).
-# 4. Add location: searching "Paris" lists results (Geocoder).
-# 5. Rain and snow alerts: turning them on reads the 15-minute forecast (Gson model through R8), then off again.
+# 2. Home tab: the current-location forecast and its hourly forecast load (Retrofit + Gson through R8).
+# 3. Details: on the Favourites tab, tapping a saved place opens its details screen (navigation
+#    arguments). Skipped when there are no favourites.
+# 4. Rain and snow alerts (Settings tab): turning them on reads the 15-minute forecast (Gson model
+#    through R8), then off again.
+# 5. Add place (Favourites tab): searching "Paris" lists results (Geocoder).
 # 6. Widget: if a Vane widget is on the home screen, it shows a temperature (Glance).
 # 7. Logcat has no OkHttp request or response lines, no widget snapshot error (kotlinx serialization),
 #    and no Vane crash.
@@ -17,6 +19,8 @@
 set -eu
 
 SERIAL="${1:-emulator-5554}"
+# Shared helpers (open_tab, has_state, ALERTS_SWITCH); the definitions below override the rest.
+. "$(dirname "$0")/lib.sh"
 PKG=com.theseuntaylor.vane
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # app-release.apk when keystore.properties sets up signing, app-release-unsigned.apk otherwise.
@@ -29,6 +33,8 @@ APK="$OUT/app-release-debugsigned.apk"
 TEMPERATURE='text="-?[0-9]+°"'
 HOME_TITLE='text="Your Current Location"'
 DETAILS_TITLE='text="Today.s Hourly Forecast"'
+FAVOURITES_TITLE='text="Favourite Locations"'
+FAVOURITES_DONE='text="Tap Add place to save a place and see its weather here."|text="-?[0-9]+°"'
 SEARCH_RESULTS='text="Search Results"'
 
 adb() { "$ADB" -s "$SERIAL" "$@"; }
@@ -48,14 +54,6 @@ wait_for() {
         adb emu geo fix -0.1276 51.5072 >/dev/null
         sleep 1
     done
-}
-tap_node() {
-    bounds=$(ui | grep -E "$1" | head -1 \
-        | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p')
-    [ -n "$bounds" ] || return 1
-    # shellcheck disable=SC2086
-    set -- $bounds
-    adb shell input tap $((($1 + $3) / 2)) $((($2 + $4) / 2))
 }
 
 widget_bound() { adb shell dumpsys appwidget | grep -q "provider=ProviderId{.*cmp:ComponentInfo{$PKG/$PKG.feature.widget.ui.VaneWeatherWidgetReceiver}"; }
@@ -85,21 +83,30 @@ adb logcat -c
 adb shell am start -S -W -f 0x10008000 -n $PKG/.MainActivity >/dev/null
 wait_for "$HOME_TITLE" || { shot 1-home; fail "Home screen never opened (1-home.png)"; }
 wait_for "$TEMPERATURE" 45 || { shot 1-home; fail "No forecast on the home screen (1-home.png)"; }
+ui | grep -qE "$DETAILS_TITLE" || { shot 1-home; fail "No hourly forecast on the Home tab (1-home.png)"; }
 shot 1-home
-pass "home screen shows a forecast, so Retrofit and Gson work after R8 (1-home.png)"
+pass "Home tab shows the forecast and its hourly forecast, so Retrofit and Gson work after R8 (1-home.png)"
 
-step "Details: tap the first city card"
-tap_node "$TEMPERATURE" || fail "Couldn't tap a city card"
-wait_for "$DETAILS_TITLE" 30 || { shot 2-details; fail "Details screen didn't show its forecast (2-details.png)"; }
-shot 2-details
-pass "details screen shows its forecast (2-details.png)"
-adb shell input keyevent BACK
-wait_for "$HOME_TITLE" || fail "Back didn't return to the home screen"
+step "Details: tap a saved place on the Favourites tab"
+open_tab Favourites || { shot 2-favourites; fail "Couldn't open the Favourites tab (2-favourites.png)"; }
+wait_for "$FAVOURITES_DONE" 45 || { shot 2-favourites; fail "Favourites tab never finished loading (2-favourites.png)"; }
+if ui | grep -qE "$TEMPERATURE"; then
+    tap_node "$TEMPERATURE" || fail "Couldn't tap a saved place"
+    wait_for "$DETAILS_TITLE" 30 || { shot 2-details; fail "Details screen didn't show its forecast (2-details.png)"; }
+    shot 2-details
+    pass "details screen shows its forecast (2-details.png)"
+    adb shell input keyevent BACK
+    wait_for "$FAVOURITES_TITLE" || fail "Back didn't return to the Favourites tab"
+else
+    echo "- SKIP: no favourites saved, so the details screen wasn't opened" >> "$OUT/report.md"
+fi
 
-step "Rain and snow alerts: the check reads the real 15-minute forecast"
-ALERTS_SWITCH='checkable="true"'
+step "Rain and snow alerts (Settings tab): the check reads the real 15-minute forecast"
+open_tab Settings || { shot 3-settings; fail "Couldn't open the Settings tab (3-settings.png)"; }
+wait_for "$ALERTS_SWITCH" || { shot 3-settings; fail "No alerts switch on the Settings tab (3-settings.png)"; }
+shot 3-settings
 adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || true
-if ui | grep -qE "$ALERTS_SWITCH checked=\"false\""; then
+if ! alerts_on; then
     tap_node "$ALERTS_SWITCH" || fail "Couldn't tap the alerts switch"
     i=0
     # Any outcome line means the response parsed; "check failed" means it didn't.
@@ -114,13 +121,14 @@ else
     echo "- SKIP: rain and snow alerts were already on; left as they were" >> "$OUT/report.md"
 fi
 
-step "Add location: search for Paris"
-tap_node 'content-desc="Plus button for adding a new location"' || fail "Couldn't tap the add button"
+step "Add place (Favourites tab): search for Paris"
+open_tab Favourites || fail "Couldn't open the Favourites tab"
+tap_node 'content-desc="Add place"' || fail "Couldn't tap 'Add place'"
 sleep 2
 adb shell input text Paris
-wait_for "$SEARCH_RESULTS" 30 || { shot 3-search; fail "No search results for Paris (3-search.png)"; }
-shot 3-search
-pass "searching Paris lists results (3-search.png)"
+wait_for "$SEARCH_RESULTS" 30 || { shot 4-search; fail "No search results for Paris (4-search.png)"; }
+shot 4-search
+pass "searching Paris lists results (4-search.png)"
 adb shell input keyevent BACK
 adb shell input keyevent BACK
 
@@ -130,11 +138,11 @@ sleep 3
 if widget_bound; then
     i=0
     until ui | grep -qE "$TEMPERATURE"; do
-        i=$((i + 1)); [ $i -gt 30 ] && { shot 4-widget; fail "The widget never showed a temperature (4-widget.png)"; }
+        i=$((i + 1)); [ $i -gt 30 ] && { shot 5-widget; fail "The widget never showed a temperature (5-widget.png)"; }
         sleep 1
     done
-    shot 4-widget
-    pass "the home screen widget shows a temperature (4-widget.png)"
+    shot 5-widget
+    pass "the home screen widget shows a temperature (5-widget.png)"
 else
     echo "- SKIP: no Vane widget on the home screen; add one to also check the widget renders" >> "$OUT/report.md"
 fi

@@ -25,3 +25,5 @@ docs/DECISIONS.md
 *.keystore
 design/node_modules/
 /.idea/*
+# Signed release bundles and R8 mappings that Android Studio writes when you build one by hand.
+/app/release/

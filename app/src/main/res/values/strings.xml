@@ -22,13 +22,30 @@
     <string name="widget_favourites">Favourites</string>
     <string name="widget_high_low">H %1$s · L %2$s</string>
 
+    <!-- Bottom navigation -->
+    <string name="tab_home">Home</string>
+    <string name="tab_favourites">Favourites</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Favourites -->
+    <string name="add_place">Add place</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_about">About</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="open_source_licences">Open-source licences</string>
+    <string name="app_version">Version %1$s</string>
+
     <!-- Home -->
     <string name="your_current_location">Your Current Location</string>
     <string name="favourite_locations">Favourite Locations</string>
     <string name="high_low">H %1$s° · L %2$s°</string>
     <string name="add_a_new_location">Add a New Location</string>
     <string name="navigate_back">Navigate back</string>
-    <string name="add_location_button">Plus button for adding a new location</string>
     <string name="location_permission_title">Vane needs your location</string>
     <string name="location_permission_body">Vane uses your location to show the weather where you are. Approximate location is enough.</string>
     <string name="location_permission_body_settings">Location access is turned off for Vane. To see the weather where you are, allow location in Settings.</string>
@@ -58,7 +75,7 @@
     <string name="error_current_location_not_found">Couldn\'t find your current location</string>
     <string name="error_location_off">Location is turned off. Turn it on to see the weather where you are.</string>
     <string name="try_again">Try again</string>
-    <string name="favourites_empty">Tap + to add a favourite location.</string>
+    <string name="favourites_empty">Tap Add place to save a place and see its weather here.</string>
 
     <!-- Weather detail descriptions -->
     <string name="uv_index_description">A measure of ultraviolet radiation from the sun. Higher values indicate a greater risk of skin damage from sun exposure (e.g., 0–2 is low risk, 8+ is very high risk).</string>
