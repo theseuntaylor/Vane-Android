@@ -22,10 +22,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.theseuntaylor.vane.R
-import com.theseuntaylor.vane.core.utils.returnTime
+import com.theseuntaylor.vane.core.units.LocalUnits
+import com.theseuntaylor.vane.core.units.formatTemperature
+import com.theseuntaylor.vane.core.units.formatTime
+import com.theseuntaylor.vane.core.units.temperatureValue
 import com.theseuntaylor.vane.core.utils.weatherIconRes
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
-import kotlin.math.roundToInt
 
 @Composable
 fun CityCard(
@@ -36,6 +38,7 @@ fun CityCard(
     uiModel: WeatherForecastUiModel = WeatherForecastUiModel(),
 ) {
     val current = uiModel.current
+    val units = LocalUnits.current
     val cardModifier = modifier
         .fillMaxWidth()
         .padding(top = 14.dp)
@@ -70,7 +73,7 @@ fun CityCard(
                     )
                 }
                 Text(
-                    text = "${uiModel.current.temperature_2m.roundToInt()}°",
+                    text = formatTemperature(uiModel.current.temperature_2m),
                     style = MaterialTheme.typography.headlineMedium,
                 )
             }
@@ -78,7 +81,7 @@ fun CityCard(
                 modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    current.time.returnTime(),
+                    formatTime(current.time),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -86,8 +89,8 @@ fun CityCard(
                 Text(
                     stringResource(
                         R.string.high_low,
-                        uiModel.highestAndLowestTemperature.first.roundToInt(),
-                        uiModel.highestAndLowestTemperature.second.roundToInt(),
+                        units.temperatureValue(uiModel.highestAndLowestTemperature.first),
+                        units.temperatureValue(uiModel.highestAndLowestTemperature.second),
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
