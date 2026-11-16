@@ -31,6 +31,14 @@ import com.theseuntaylor.vane.BuildConfig
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.feature.alerts.ui.RainAlertsSwitch
 import com.theseuntaylor.vane.core.theme.ThemeMode
+import com.theseuntaylor.vane.core.units.ClockFormat
+import com.theseuntaylor.vane.core.units.PrecipitationUnit
+import com.theseuntaylor.vane.core.units.TemperatureUnit
+import com.theseuntaylor.vane.core.units.WindSpeedUnit
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 
 /**
  * Settings tab, in sections. A new setting goes in an existing [SettingsSection] or a new one.
@@ -42,6 +50,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val units by viewModel.units.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -61,6 +70,37 @@ fun SettingsScreen(
                     )
                 }
             }
+        }
+
+        SettingsSection(R.string.settings_units) {
+            UnitChoice(
+                title = R.string.units_temperature,
+                options = TemperatureUnit.entries,
+                selected = units.temperature,
+                label = { it.label },
+                onSelect = { viewModel.setUnits(units.copy(temperature = it)) },
+            )
+            UnitChoice(
+                title = R.string.units_wind_speed,
+                options = WindSpeedUnit.entries,
+                selected = units.windSpeed,
+                label = { it.label },
+                onSelect = { viewModel.setUnits(units.copy(windSpeed = it)) },
+            )
+            UnitChoice(
+                title = R.string.units_precipitation,
+                options = PrecipitationUnit.entries,
+                selected = units.precipitation,
+                label = { it.label },
+                onSelect = { viewModel.setUnits(units.copy(precipitation = it)) },
+            )
+            UnitChoice(
+                title = R.string.units_clock,
+                options = ClockFormat.entries,
+                selected = units.clock,
+                label = { it.label },
+                onSelect = { viewModel.setUnits(units.copy(clock = it)) },
+            )
         }
 
         SettingsSection(R.string.settings_notifications) {
@@ -98,6 +138,62 @@ private val ThemeMode.label: Int
         ThemeMode.LIGHT -> R.string.theme_light
         ThemeMode.DARK -> R.string.theme_dark
     }
+
+private val TemperatureUnit.label: Int
+    @StringRes get() = when (this) {
+        TemperatureUnit.CELSIUS -> R.string.unit_celsius
+        TemperatureUnit.FAHRENHEIT -> R.string.unit_fahrenheit
+    }
+
+private val WindSpeedUnit.label: Int
+    @StringRes get() = when (this) {
+        WindSpeedUnit.KILOMETRES_PER_HOUR -> R.string.unit_kmh
+        WindSpeedUnit.MILES_PER_HOUR -> R.string.unit_mph
+        WindSpeedUnit.METRES_PER_SECOND -> R.string.unit_ms
+    }
+
+private val PrecipitationUnit.label: Int
+    @StringRes get() = when (this) {
+        PrecipitationUnit.MILLIMETRES -> R.string.unit_mm
+        PrecipitationUnit.INCHES -> R.string.unit_inches
+    }
+
+private val ClockFormat.label: Int
+    @StringRes get() = when (this) {
+        ClockFormat.SYSTEM -> R.string.clock_system
+        ClockFormat.TWELVE_HOUR -> R.string.clock_12_hour
+        ClockFormat.TWENTY_FOUR_HOUR -> R.string.clock_24_hour
+    }
+
+/** One unit setting: its name, then a Material 3 segmented button row with one segment per option. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> UnitChoice(
+    @StringRes title: Int,
+    options: List<T>,
+    selected: T,
+    label: (T) -> Int,
+    onSelect: (T) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Text(
+            text = stringResource(title),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, option ->
+                SegmentedButton(
+                    selected = option == selected,
+                    onClick = { onSelect(option) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                ) {
+                    Text(stringResource(label(option)), maxLines = 1)
+                }
+            }
+        }
+    }
+}
 
 /** A heading in the primary colour, then the section's settings on a card. */
 @Composable
