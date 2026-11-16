@@ -59,7 +59,12 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlin.math.roundToInt
+import android.text.format.DateFormat
+import androidx.compose.runtime.CompositionLocalProvider
+import com.theseuntaylor.vane.core.units.LocalUnits
+import com.theseuntaylor.vane.core.units.formatClockTime
+import com.theseuntaylor.vane.core.units.formatTemperature as formatInUnits
+import com.theseuntaylor.vane.feature.settings.data.UnitSettings
 
 /** The app's generated M3 palette, so the widget matches the app in light and dark mode. */
 private val VaneWidgetColors = ColorProviders(light = LightColorScheme, dark = DarkColorScheme)
@@ -69,16 +74,21 @@ class VaneWeatherWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(SMALL, WIDE, LARGE, TALL))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val store = EntryPointAccessors
+        val entryPoint = EntryPointAccessors
             .fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
-            .widgetWeatherStore()
+        val store = entryPoint.widgetWeatherStore()
+        val unitSettings = entryPoint.unitSettings()
         val states = store.observe()
         val initial = store.readState()
 
         provideContent {
             val state by states.collectAsState(initial = initial)
+            // Redraws in the new units as soon as they change in Settings.
+            val units by unitSettings.units.collectAsState()
             GlanceTheme(colors = VaneWidgetColors) {
-                WidgetContent(context, state)
+                CompositionLocalProvider(LocalUnits provides units) {
+                    WidgetContent(context, state)
+                }
             }
         }
     }
@@ -87,6 +97,7 @@ class VaneWeatherWidget : GlanceAppWidget() {
     @InstallIn(SingletonComponent::class)
     interface WidgetEntryPoint {
         fun widgetWeatherStore(): WidgetWeatherStore
+        fun unitSettings(): UnitSettings
     }
 
     companion object {
@@ -253,7 +264,10 @@ private fun UpcomingHours(hours: List<HourlyTemperature>) {
                     horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
                 ) {
                     Text(
-                        text = hour.hour,
+                        text = LocalUnits.current.formatClockTime(
+                            hour.hour,
+                            DateFormat.is24HourFormat(LocalContext.current),
+                        ),
                         style = TextStyle(color = GlanceTheme.colors.onSecondaryContainer, fontSize = 12.sp),
                     )
                     // Snapshots saved before hourly codes were requested have no icon.
@@ -362,7 +376,8 @@ private fun UpdatedChip(context: Context, snapshot: WidgetWeatherSnapshot) {
     }
 }
 
-private fun formatTemperature(celsius: Double) = "${celsius.roundToInt()}°"
+@Composable
+private fun formatTemperature(celsius: Double) = LocalUnits.current.formatInUnits(celsius)
 
 @Composable
 private fun conditionLabel(code: Int): String =
