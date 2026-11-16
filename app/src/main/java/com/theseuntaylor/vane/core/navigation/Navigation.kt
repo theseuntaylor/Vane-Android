@@ -9,7 +9,36 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.theseuntaylor.vane.feature.detailsScreen.ui.DetailedWeatherForecastScreen
 import com.theseuntaylor.vane.feature.favouriteLocations.ui.AddFavouriteLocationScreen
+import com.theseuntaylor.vane.feature.favouriteLocations.ui.FavouritesScreen
+import com.theseuntaylor.vane.feature.favouriteLocations.ui.FavouritesViewModel
 import com.theseuntaylor.vane.feature.home.ui.HomeScreen
+import com.theseuntaylor.vane.feature.settings.ui.LicencesScreen
+import com.theseuntaylor.vane.feature.settings.ui.SettingsScreen
+
+fun NavGraphBuilder.homeScreen() {
+    composable<Home> {
+        HomeScreen()
+    }
+}
+
+fun NavGraphBuilder.favouritesScreen(
+    navController: NavController,
+    favouritesViewModel: FavouritesViewModel,
+) {
+    composable<Favourites> {
+        FavouritesScreen(
+            viewModel = favouritesViewModel,
+            onAddPlace = { navController.navigate(AddFavouriteLocation) },
+            onOpenPlace = { navController.navigate(it) },
+        )
+    }
+}
+
+fun NavGraphBuilder.settingsScreen(navController: NavController) {
+    composable<Settings> {
+        SettingsScreen(onOpenLicences = { navController.navigate(Licences) })
+    }
+}
 
 fun NavGraphBuilder.detailedForecastScreen(
     modifier: Modifier,
@@ -33,20 +62,8 @@ fun NavGraphBuilder.addLocationScreen(navController: NavController) {
     }
 }
 
-fun NavGraphBuilder.homeScreen(
-    navController: NavController
-) {
-    composable<Home> {
-        HomeScreen(
-            navigateToDetailedForecast = { favouriteLocation ->
-                navController.navigate(
-                    DetailedForecast(
-                        location = favouriteLocation.location,
-                        longitude = favouriteLocation.longitude,
-                        latitude = favouriteLocation.latitude
-                    )
-                )
-            }
-        )
+fun NavGraphBuilder.licencesScreen(navController: NavController) {
+    composable<Licences> {
+        LicencesScreen(navController = navController)
     }
 }
