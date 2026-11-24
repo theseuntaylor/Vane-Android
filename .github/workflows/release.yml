@@ -1,4 +1,5 @@
-# Builds a signed release bundle and uploads it to Google Play when a version tag is pushed.
+# Builds a signed release bundle and uploads it to the Google Play production track when a version
+# tag is pushed.
 #
 # To release: git tag v1.2.0 && git push origin v1.2.0
 # versionName comes from the tag. If app/build.gradle in the tagged commit already has that
@@ -82,7 +83,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.theseuntaylor.vane
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
-          track: internal
+          track: production
           status: completed
 
       - uses: actions/upload-artifact@v7
