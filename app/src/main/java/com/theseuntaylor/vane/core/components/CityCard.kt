@@ -2,6 +2,7 @@ package com.theseuntaylor.vane.core.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -29,18 +30,16 @@ import kotlin.math.roundToInt
 @Composable
 fun CityCard(
     modifier: Modifier = Modifier,
-    onCardItemClicked: () -> Unit = {},
+    /** Opens this place's forecast. Null makes the card plain, not clickable. */
+    onCardItemClicked: (() -> Unit)? = null,
     name: String,
     uiModel: WeatherForecastUiModel = WeatherForecastUiModel(),
 ) {
     val current = uiModel.current
-    Card(
-        shape = RoundedCornerShape(8.dp),
-        onClick = onCardItemClicked,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 14.dp),
-    ) {
+    val cardModifier = modifier
+        .fillMaxWidth()
+        .padding(top = 14.dp)
+    val content: @Composable ColumnScope.() -> Unit = {
         Column(
             modifier = modifier
                 .fillMaxWidth()
@@ -96,5 +95,10 @@ fun CityCard(
             }
             Text(stringResource(uiModel.summary), style = MaterialTheme.typography.bodyLarge)
         }
+    }
+    if (onCardItemClicked != null) {
+        Card(shape = RoundedCornerShape(8.dp), onClick = onCardItemClicked, modifier = cardModifier, content = content)
+    } else {
+        Card(shape = RoundedCornerShape(8.dp), modifier = cardModifier, content = content)
     }
 }

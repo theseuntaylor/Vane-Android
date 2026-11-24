@@ -33,8 +33,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.theseuntaylor.vane.core.VaneAppState
 import com.theseuntaylor.vane.core.components.LocationPermissionScreen
-import com.theseuntaylor.vane.core.components.VaneFloatingActionButton
-import com.theseuntaylor.vane.core.navigation.AddFavouriteLocation
 import com.theseuntaylor.vane.core.navigation.Home
 import com.theseuntaylor.vane.core.navigation.addLocationScreen
 import com.theseuntaylor.vane.core.navigation.detailedForecastScreen
@@ -42,9 +40,31 @@ import com.theseuntaylor.vane.core.navigation.homeScreen
 import com.theseuntaylor.vane.core.theme.VaneTheme
 import com.theseuntaylor.vane.core.utils.hasLocationPermission
 import dagger.hilt.android.AndroidEntryPoint
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.theseuntaylor.vane.core.navigation.TopLevelDestination
+import com.theseuntaylor.vane.core.navigation.favouritesScreen
+import com.theseuntaylor.vane.core.navigation.licencesScreen
+import com.theseuntaylor.vane.core.navigation.settingsScreen
+import com.theseuntaylor.vane.core.theme.isDark
+import com.theseuntaylor.vane.feature.favouriteLocations.ui.FavouritesViewModel
+import com.theseuntaylor.vane.feature.settings.data.AppearanceSettings
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var appearanceSettings: AppearanceSettings
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,28 +108,40 @@ class MainActivity : ComponentActivity() {
                 }
             })
 
-            VaneTheme {
+            val themeMode by appearanceSettings.themeMode.collectAsStateWithLifecycle()
+            val darkTheme = themeMode.isDark()
+
+            // The status and navigation bar icons follow the app's theme, not the system's.
+            DisposableEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(LightScrim, DarkScrim) { darkTheme },
+                )
+                onDispose {}
+            }
+
+            VaneTheme(darkTheme = darkTheme) {
 
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
-                val appState = VaneAppState(navController = navController)
+                val appState = remember(navController) { VaneAppState(navController = navController) }
 
                 val modifier = Modifier
 
                 Surface(
                     modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(floatingActionButton = {
-                        if (appState.shouldShowFAB) {
-                            VaneFloatingActionButton {
-                                navController.navigate(AddFavouriteLocation)
-                            }
+                    Scaffold(bottomBar = {
+                        if (locationPermissionsGranted && appState.shouldShowBottomBar) {
+                            VaneNavigationBar(appState)
                         }
                     }, snackbarHost = {
                         SnackbarHost(hostState = snackbarHostState)
                     }) { innerPaddingValue ->
 
                         if (locationPermissionsGranted) {
+                            // Activity-scoped, so favourites (and the widget's copy) load at launch, as before.
+                            val favouritesViewModel: FavouritesViewModel = hiltViewModel()
                             Box(
                                 modifier = modifier
                                     .padding(innerPaddingValue)
@@ -122,8 +154,11 @@ class MainActivity : ComponentActivity() {
                                     startDestination = Home,
                                     modifier = Modifier
                                 ) {
-                                    homeScreen(navController = navController)
+                                    homeScreen()
+                                    favouritesScreen(navController, favouritesViewModel)
+                                    settingsScreen(navController)
                                     addLocationScreen(navController = navController)
+                                    licencesScreen(navController)
                                     detailedForecastScreen(
                                         modifier = modifier,
                                         navController = navController,
@@ -156,5 +191,24 @@ class MainActivity : ComponentActivity() {
             startActivity(it)
         }
     }
-
 }
+
+/** Material 3 bottom navigation bar with the three tabs. */
+@Composable
+private fun VaneNavigationBar(appState: VaneAppState) {
+    val currentDestination = appState.currentDestination
+    NavigationBar {
+        TopLevelDestination.entries.forEach { tab ->
+            NavigationBarItem(
+                selected = appState.isSelected(currentDestination, tab),
+                onClick = { appState.navigateToTopLevelDestination(tab) },
+                icon = { Icon(painterResource(tab.icon), contentDescription = null) },
+                label = { Text(stringResource(tab.label)) },
+            )
+        }
+    }
+}
+
+// The scrims enableEdgeToEdge() uses by default for three-button navigation.
+private val LightScrim = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+private val DarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b)

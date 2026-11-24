@@ -26,15 +26,51 @@ wait_for() {
         sleep 1
     done
 }
-# Taps the centre of the first node matching the regex $1.
+# Taps the centre of the first node matching the regex $1 (the last one with $2 = last).
 tap_node() {
-    bounds=$(ui | grep -E "$1" | head -1 \
+    if [ "${2:-first}" = last ]; then lines=$(ui | grep -E "$1" | tail -1); else lines=$(ui | grep -E "$1" | head -1); fi
+    bounds=$(echo "$lines" \
         | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p')
     [ -n "$bounds" ] || return 1
     # shellcheck disable=SC2086
     set -- $bounds
     adb shell input tap $((($1 + $3) / 2)) $((($2 + $4) / 2))
 }
+# Succeeds if the last node with text $1 sits inside a node whose attribute $2 ("selected" or
+# "checked") is true. Compose puts the state on the clickable row and the text on a child node.
+has_state() {
+    ui | awk -v text="text=\"$1\"" -v state="$2=\"true\"" '
+        function box(line, b) {
+            if (!match(line, /bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"/)) return 0
+            split(substr(line, RSTART + 9, RLENGTH - 10), b, /[^0-9]+/)
+            l = b[1]; t = b[2]; r = b[3]; bt = b[4]; return 1
+        }
+        index($0, state) && box($0) { n++; L[n] = l; T[n] = t; R[n] = r; B[n] = bt }
+        index($0, text) && box($0) { x = (l + r) / 2; y = (t + bt) / 2; found = 1 }
+        END {
+            if (!found) exit 1
+            for (i = 1; i <= n; i++) if (x >= L[i] && x <= R[i] && y >= T[i] && y <= B[i]) exit 0
+            exit 1
+        }'
+}
+# Waits up to $3 seconds (default 10) for has_state $1 $2.
+wait_for_state() {
+    i=0
+    until has_state "$1" "$2"; do
+        i=$((i + 1)); [ $i -gt "${3:-10}" ] && return 1
+        sleep 1
+    done
+}
+# Opens a bottom navigation tab ("Home", "Favourites" or "Settings") and waits until it is selected.
+# The bar is the last thing on screen, so this taps the last node with that text, not a screen title.
+open_tab() {
+    tap_node "text=\"$1\"" last || return 1
+    wait_for_state "$1" selected
+}
+# The "Rain and snow alerts" switch (Settings tab). Tap its label: the whole row toggles. Its state
+# is on the row, like the appearance radio buttons, so check it with alerts_on, not a regex.
+ALERTS_SWITCH='text="Rain and snow alerts"'
+alerts_on() { has_state "Rain and snow alerts" checked; }
 # The package of the window that has focus, e.g. com.theseuntaylor.vane.
 focused_package() {
     adb shell dumpsys window | grep -m1 mCurrentFocus | sed -n 's/.* \([a-zA-Z0-9_.]*\)\/.*/\1/p'

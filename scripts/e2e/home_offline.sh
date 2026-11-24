@@ -6,7 +6,8 @@
 # 1. Online: installs the debug APK with an empty HTTP cache, opens the app and waits for the
 #    current-location forecast.
 # 2. Offline: closes the app, turns on airplane mode, reopens it at the same location and checks
-#    that the same temperature shows with no error.
+#    that the same temperature shows with no error, along with the Home tab's hourly forecast and
+#    conditions (they come from the same cached response).
 # 3. Writes screenshots and a report to build/e2e/home-offline-<timestamp>/.
 #
 # Use an emulator: the script toggles airplane mode and sends GPS fixes.
@@ -19,6 +20,8 @@ OUT="$ROOT/build/e2e/home-offline-$(date +%Y%m%d-%H%M%S)"
 # A temperature on a city card, e.g. text="12°" or text="-3°".
 TEMPERATURE='text="-?[0-9]+°"'
 ERROR='text="There was an error loading forecasts"'
+DETAILS='text="Today.s Hourly Forecast"'
+CONDITIONS='text="Today.s Weather Conditions"'
 
 current_temperature() { ui | grep -oE "$TEMPERATURE" | head -1; }
 open_app_at_london() {
@@ -67,6 +70,12 @@ OFFLINE=$(current_temperature)
 shot 2-offline
 [ "$OFFLINE" = "$ONLINE" ] || fail "Offline temperature $OFFLINE differs from online $ONLINE"
 pass "home screen showed the cached forecast offline: $OFFLINE (2-offline.png)"
+ui | grep -qE "$DETAILS" || fail "Offline: the Home tab has no hourly forecast (2-offline.png)"
+# The conditions are further down the list.
+ui | grep -qE "$CONDITIONS" || { adb shell input swipe 500 1500 500 600 300; sleep 1; }
+ui | grep -qE "$CONDITIONS" || { shot 3-offline-conditions; fail "Offline: the Home tab has no weather conditions (3-offline-conditions.png)"; }
+shot 3-offline-conditions
+pass "the Home tab's hourly forecast and conditions show offline too (3-offline-conditions.png)"
 ui | grep -qE "$ERROR" && fail "Offline: the load error snackbar also showed"
 pass "no load error offline"
 check_no_crash
