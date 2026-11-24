@@ -19,3 +19,11 @@ fun VaneTheme(
         content = content
     )
 }
+
+/** Whether [mode] means dark colours right now: "System default" follows the device's dark theme. */
+@Composable
+fun ThemeMode.isDark(): Boolean = when (this) {
+    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    ThemeMode.LIGHT -> false
+    ThemeMode.DARK -> true
+}

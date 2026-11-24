@@ -5,7 +5,7 @@
 #
 # Debug builds fetch the alert forecast from the URL in files/e2e-alerts-base-url, if present.
 # This script serves canned forecasts from this computer (scripts/e2e/nowcast_server.py, reached
-# through adb reverse) and turns the home screen's "Rain and snow alerts" switch on and off; each
+# through adb reverse) and turns the Settings tab's "Rain and snow alerts" switch on and off; each
 # switch-on runs the check at once.
 # 1. Declining the notification prompt (Android 13+) leaves alerts off and says how to allow them.
 # 2. Dry next 90 minutes: no notification.
@@ -23,8 +23,8 @@ OUT="$ROOT/build/e2e/rain-alerts-$(date +%Y%m%d-%H%M%S)"
 PORT=8765
 
 TEMPERATURE='text="-?[0-9]+°"'
-SWITCH='checkable="true"'
-SWITCH_ON='checkable="true" checked="true"'
+# From lib.sh: the alerts switch's label; alerts_on reads its state.
+SWITCH="$ALERTS_SWITCH"
 BLOCKED='text="Notifications are off for Vane[^"]*"'
 DENY_BUTTON='resource-id="com.android.permissioncontroller:id/permission_deny_button"'
 NOTIFICATION_PERMISSION=android.permission.POST_NOTIFICATIONS
@@ -57,16 +57,16 @@ tap_switch() {
 set_scenario() { echo "$1" > "$OUT/server/scenario"; }
 # Switch-on runs a check; switching off first makes sure the next tap is a switch-on.
 switch_on_again() {
-    if ui | grep -qE "$SWITCH_ON"; then tap_switch; sleep 1; fi
+    if alerts_on; then tap_switch; sleep 1; fi
     tap_switch
-    wait_for "$SWITCH_ON" 10 || { shot switch; fail "The alerts switch didn't turn on (switch.png)"; }
+    wait_for_state "Rain and snow alerts" checked 10 || { shot switch; fail "The alerts switch didn't turn on (switch.png)"; }
 }
 
 cleanup() {
     [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null || true
     adb reverse --remove tcp:$PORT >/dev/null 2>&1 || true
     # Switch off through the app so the background check is cancelled, then restore the settings.
-    ui | grep -qE "$SWITCH_ON" && tap_node "$SWITCH" && sleep 1
+    alerts_on && tap_node "$SWITCH" && sleep 1
     adb shell am force-stop $PKG
     adb shell run-as $PKG sh -c "'rm -f files/e2e-alerts-base-url shared_prefs/vane_alerts.xml; \
         [ -f files/e2e-vane_alerts.xml ] && mv files/e2e-vane_alerts.xml shared_prefs/vane_alerts.xml; true'" \
@@ -123,9 +123,13 @@ until ui | grep -qE "$TEMPERATURE"; do
 done
 adb shell run-as $PKG cat shared_prefs/vane_widget.xml | grep -q 'name="snapshot"' \
     || fail "The home screen didn't save its location"
-wait_for "$SWITCH" || { shot 1-home; fail "No alerts switch on the home screen (1-home.png)"; }
 shot 1-home
-pass "home screen shows a forecast and the alerts switch, off (1-home.png)"
+pass "Home tab shows a forecast and saved its location (1-home.png)"
+open_tab Settings || { shot 1-settings; fail "Couldn't open the Settings tab (1-settings.png)"; }
+wait_for "$SWITCH" || { shot 1-settings; fail "No alerts switch on the Settings tab (1-settings.png)"; }
+alerts_on && { shot 1-settings; fail "The alerts switch started on (1-settings.png)"; }
+shot 1-settings
+pass "Settings tab shows the alerts switch, off (1-settings.png)"
 
 if [ "$API" -ge 33 ]; then
     step "Declining notifications leaves alerts off"
@@ -134,7 +138,7 @@ if [ "$API" -ge 33 ]; then
     shot 2-prompt
     tap_node "$DENY_BUTTON"
     wait_for "$BLOCKED" 10 || { shot 3-declined; fail "No explanation after declining notifications (3-declined.png)"; }
-    ui | grep -qE "$SWITCH_ON" && { shot 3-declined; fail "Alerts turned on without notifications (3-declined.png)"; }
+    alerts_on && { shot 3-declined; fail "Alerts turned on without notifications (3-declined.png)"; }
     shot 3-declined
     pass "declining the prompt keeps the switch off and explains how to allow notifications (2-prompt.png, 3-declined.png)"
 else

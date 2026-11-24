@@ -1,13 +1,13 @@
 #!/bin/sh
-# End-to-end check: a city added from search shows on the home screen straight away and after a restart.
+# End-to-end check: a city added from search shows on the Favourites tab straight away and after a restart.
 #
 # Usage: scripts/e2e/add_favourite.sh [emulator-serial]   (after ./gradlew :app:assembleDebug)
 #
 # 1. Backs up the app's database (debug build, via run-as) and restores it at the end, so the
 #    emulator's own favourites are left as they were.
-# 2. Searches for Nairobi, taps the first result and goes back: the home screen must list Nairobi
-#    with a forecast, without restarting the app.
-# 3. Restarts the app: Nairobi must still be there (saved in Room).
+# 2. Opens the Favourites tab, taps "Add place", searches for Nairobi, taps the first result and
+#    goes back: the Favourites tab must list Nairobi with a forecast, without restarting the app.
+# 3. Restarts the app (it opens on Home) and opens Favourites: Nairobi must still be there (saved in Room).
 # 4. Writes screenshots and a report to build/e2e/add-favourite-<timestamp>/.
 set -eu
 
@@ -17,11 +17,12 @@ OUT="$ROOT/build/e2e/add-favourite-$(date +%Y%m%d-%H%M%S)"
 
 CITY=Nairobi
 HOME_TITLE='text="Your Current Location"'
-ADD_BUTTON='content-desc="Plus button for adding a new location"'
+FAVOURITES_TITLE='text="Favourite Locations"'
+ADD_BUTTON='content-desc="Add place"'
 SEARCH_RESULTS='text="Search Results"'
 # A search result reads "<address line>, <country code>", e.g. "Nairobi, Kenya, KE".
 RESULT="text=\"$CITY[^\"]*, [A-Z][A-Z]\""
-# On the home screen the favourite's card title is just the place name.
+# On the Favourites tab the card title is just the place name.
 CITY_CARD="text=\"$CITY\""
 
 restore_database() {
@@ -50,7 +51,10 @@ step "Search for $CITY and add it"
 adb logcat -c
 start_vane -S
 wait_for "$HOME_TITLE" || { shot 1-home; fail "Home screen never opened (1-home.png)"; }
-tap_node "$ADD_BUTTON" || fail "Couldn't tap the add button"
+open_tab Favourites || { shot 1-favourites; fail "Couldn't open the Favourites tab (1-favourites.png)"; }
+wait_for "$ADD_BUTTON" || { shot 1-favourites; fail "No 'Add place' button on the Favourites tab (1-favourites.png)"; }
+shot 1-favourites
+tap_node "$ADD_BUTTON" || fail "Couldn't tap 'Add place'"
 sleep 2
 adb shell input text $CITY
 wait_for "$RESULT" 30 || { shot 2-search; fail "No search result for $CITY (2-search.png)"; }
@@ -59,16 +63,18 @@ tap_node "$RESULT"
 sleep 2
 adb shell input keyevent BACK   # closes the keyboard
 sleep 1
-ui | grep -qE "$HOME_TITLE" || adb shell input keyevent BACK
-wait_for "$HOME_TITLE" || { shot 3-home-after-add; fail "Back didn't return to the home screen (3-home-after-add.png)"; }
+ui | grep -qE "$FAVOURITES_TITLE" || adb shell input keyevent BACK
+wait_for "$FAVOURITES_TITLE" || { shot 3-favourites-after-add; fail "Back didn't return to the Favourites tab (3-favourites-after-add.png)"; }
 
-step "Home screen lists $CITY without a restart"
-wait_for "$CITY_CARD" 30 || { shot 3-home-after-add; fail "$CITY isn't on the home screen after adding it (3-home-after-add.png)"; }
-shot 3-home-after-add
-pass "$CITY shows on the home screen straight after adding it (3-home-after-add.png)"
+step "Favourites tab lists $CITY without a restart"
+wait_for "$CITY_CARD" 30 || { shot 3-favourites-after-add; fail "$CITY isn't on the Favourites tab after adding it (3-favourites-after-add.png)"; }
+shot 3-favourites-after-add
+pass "$CITY shows on the Favourites tab straight after adding it (3-favourites-after-add.png)"
 
 step "Restart: $CITY is still there"
 start_vane -S
+wait_for "$HOME_TITLE" || { shot 4-restarted; fail "Home screen never opened after the restart (4-restarted.png)"; }
+open_tab Favourites || { shot 4-restarted; fail "Couldn't open the Favourites tab after the restart (4-restarted.png)"; }
 wait_for "$CITY_CARD" 30 || { shot 4-restarted; fail "$CITY is gone after a restart (4-restarted.png)"; }
 shot 4-restarted
 pass "$CITY is still a favourite after restarting the app (4-restarted.png)"
