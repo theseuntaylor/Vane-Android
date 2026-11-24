@@ -10,6 +10,13 @@
 #   3. The bundle is signed with a key other than the one keystore.properties names.
 #   4. scripts/ci/set_version.sh does not write the release version into app/build.gradle,
 #      or accepts a version that is not safe to write.
+#   5. scripts/ci/resolve_version.sh picks the wrong release version:
+#      a. a manual bump (versionName already equals the tag), merged to master or not, is replaced
+#         by master's code + 1;
+#      b. without a manual bump, versionCode is not master's code + 1, or versionName is not the tag;
+#      c. a manual versionCode at or below one master already released is accepted
+#         (Play would reject it after the build);
+#      d. a build file with no readable versionCode gives a version instead of an error.
 #
 # Uses a throwaway keystore, never the real one. An existing keystore.properties is moved aside
 # and put back at the end. Writes a log to
@@ -47,6 +54,23 @@ if scripts/ci/set_version.sh 5 '1.0"; rm' "$TMP/build.gradle" >> "$LOG" 2>&1; th
     fail "set_version.sh accepted an unsafe versionName"
 fi
 echo "- PASS: set_version.sh writes versionCode and versionName, and rejects unsafe values" >> "$LOG"
+
+# Build files for the resolver: master at 5 / 1.0.4, and tagged commits with and without a bump.
+gradle_at() { printf '        versionCode = %s\n        versionName = "%s"\n' "$1" "$2" > "$TMP/$3"; }
+gradle_at 5 1.0.4 master.gradle
+gradle_at 7 1.0.6 bumped.gradle
+gradle_at 5 1.0.4 unbumped.gradle
+gradle_at 5 1.0.6 stale-code.gradle
+printf 'android {}\n' > "$TMP/no-version.gradle"
+resolve() { scripts/ci/resolve_version.sh "$1" "$TMP/$2" "$TMP/$3" 2>> "$LOG"; }
+
+[ "$(resolve v1.0.6 bumped.gradle master.gradle)" = "7 1.0.6" ] || fail "manual bump not respected (5a)"
+[ "$(resolve v1.0.6 unbumped.gradle master.gradle)" = "6 1.0.6" ] || fail "auto-bump is not master + 1 with the tag's name (5b)"
+[ "$(resolve v1.0.4 unbumped.gradle master.gradle)" = "5 1.0.4" ] || fail "manual bump already merged to master not respected (5a)"
+resolve v1.0.6 stale-code.gradle master.gradle > /dev/null && fail "accepted a manual versionCode master already released (5c)"
+resolve v1.0.6 no-version.gradle master.gradle > /dev/null && fail "gave a version for a build file without versionCode (5d)"
+resolve v1.0.6 bumped.gradle no-version.gradle > /dev/null && fail "gave a version when master has no versionCode (5d)"
+echo "- PASS: resolve_version.sh respects manual bumps, auto-bumps otherwise, and rejects stale or missing codes" >> "$LOG"
 
 sh ./gradlew :app:bundleRelease -q >> "$LOG" 2>&1 || fail "bundleRelease failed without keystore.properties (see log)"
 if jarsigner -verify "$AAB" 2>&1 | grep -q "jar verified"; then

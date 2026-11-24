@@ -1,8 +1,9 @@
 # Builds a signed release bundle and uploads it to Google Play when a version tag is pushed.
 #
 # To release: git tag v1.2.0 && git push origin v1.2.0
-# versionName comes from the tag and versionCode is master's value plus one. After Play accepts
-# the bundle, both are committed back to master.
+# versionName comes from the tag. If app/build.gradle in the tagged commit already has that
+# versionName (a manual bump), its versionCode is used as it is; otherwise versionCode is master's
+# value plus one. After Play accepts the bundle, both are committed back to master if it differs.
 #
 # Repository secrets used: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD,
 # SERVICE_ACCOUNT_JSON (the Play service account key as plain JSON).
@@ -31,20 +32,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set versionName from tag and increment versionCode
+      - name: Set release version
         run: |
-          version_name="${GITHUB_REF_NAME#v}"
-          current=$(git show origin/master:app/build.gradle \
-            | sed -n -E 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*([0-9]+)[[:space:]]*$/\1/p')
-          if [ -z "$current" ]; then
-            echo "::error::Could not find versionCode in app/build.gradle on master"
-            exit 1
-          fi
-          version_code=$((current + 1))
-          echo "versionCode $current -> $version_code, versionName $version_name"
-          scripts/ci/set_version.sh "$version_code" "$version_name"
-          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
-          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+          git show origin/master:app/build.gradle > "$RUNNER_TEMP/master.gradle"
+          # Assigned first so a resolver error fails the step (set -- would hide it).
+          version=$(scripts/ci/resolve_version.sh "$GITHUB_REF_NAME" app/build.gradle "$RUNNER_TEMP/master.gradle")
+          set -- $version
+          echo "Releasing versionName $2, versionCode $1"
+          scripts/ci/set_version.sh "$1" "$2"
+          echo "VERSION_CODE=$1" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$2" >> "$GITHUB_ENV"
 
       # Only runs the Gradle launcher; the build itself uses the JDK from
       # gradle/gradle-daemon-jvm.properties.
@@ -102,6 +99,10 @@ jobs:
           scripts/ci/set_version.sh "$VERSION_CODE" "$VERSION_NAME"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet app/build.gradle; then
+            echo "master already has $VERSION_NAME ($VERSION_CODE)."
+            exit 0
+          fi
           git commit -m "Bumped version to $VERSION_NAME ($VERSION_CODE) after the $GITHUB_REF_NAME release." app/build.gradle
           git push origin master
 
