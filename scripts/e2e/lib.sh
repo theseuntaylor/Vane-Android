@@ -14,9 +14,16 @@ fail() { echo "- FAIL: $*" | tee -a "$OUT/report.md"; echo "Artifacts in $OUT"; 
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 
 # The screen's accessibility tree, one node per line. Compose text shows up as text="…".
+# A dump can fail while the screen animates ("could not get idle state") and leave no file or the
+# previous one, so delete it first and retry until a dump has nodes in it.
 ui() {
-    adb shell uiautomator dump /sdcard/vane-ui.xml >/dev/null 2>&1
-    adb shell cat /sdcard/vane-ui.xml | tr '>' '\n'
+    for _ in 1 2 3 4 5; do
+        adb shell "rm -f /sdcard/vane-ui.xml; uiautomator dump /sdcard/vane-ui.xml" >/dev/null 2>&1
+        dump=$(adb shell cat /sdcard/vane-ui.xml 2>/dev/null)
+        case "$dump" in *"<node"*) printf '%s\n' "$dump" | tr '>' '\n'; return 0 ;; esac
+        sleep 1
+    done
+    return 1
 }
 # Waits up to $2 seconds (default 20) for a node matching the regex $1.
 wait_for() {

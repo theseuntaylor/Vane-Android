@@ -71,7 +71,9 @@
     <string name="location_name_unavailable">Error getting your current Location :(</string>
 
     <!-- Errors -->
-    <string name="error_loading_forecasts">There was an error loading forecasts</string>
+    <string name="error_loading_forecasts">Couldn\'t load the forecast. Try again.</string>
+    <string name="error_offline">You\'re offline, and there\'s no saved forecast yet. Connect to the internet and try again.</string>
+    <string name="error_forecast_service">The weather service isn\'t responding. Try again in a few minutes.</string>
     <string name="error_current_location_not_found">Couldn\'t find your current location</string>
     <string name="error_location_off">Location is turned off. Turn it on to see the weather where you are.</string>
     <string name="try_again">Try again</string>

@@ -3,6 +3,7 @@ package com.theseuntaylor.vane.feature.detailsScreen.ui
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.theseuntaylor.vane.R
+import com.theseuntaylor.vane.core.utils.forecastErrorMessage
 import androidx.lifecycle.viewModelScope
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +38,7 @@ class DetailedWeatherForecastViewModel @Inject constructor(
         }.catch {
             Log.e(TAG, "Couldn't load the forecast", it)
             _uiState.value = DetailedWeatherForecastUiState.Error(
-                errorMessage = R.string.error_loading_forecasts
+                errorMessage = it.forecastErrorMessage()
             )
         }.collect {
             _uiState.value = DetailedWeatherForecastUiState.Success(it)

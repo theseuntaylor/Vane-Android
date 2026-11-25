@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theseuntaylor.vane.R
+import com.theseuntaylor.vane.core.utils.forecastErrorMessage
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
 import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationRepository
 import com.theseuntaylor.vane.feature.home.data.repository.CurrentLocationResult
@@ -67,7 +68,7 @@ class HomeViewModel @Inject constructor(
             .onStart { _uiState.value = HomeUiState.Loading }
             .catch {
                 Log.e("HomeViewModel", "Couldn't load the forecast", it)
-                _uiState.value = HomeUiState.Error(R.string.error_loading_forecasts)
+                _uiState.value = HomeUiState.Error(it.forecastErrorMessage())
             }
             .collect {
                 _uiState.value = HomeUiState.Success(
