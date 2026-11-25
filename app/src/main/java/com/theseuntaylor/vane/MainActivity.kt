@@ -156,9 +156,14 @@ class MainActivity : ComponentActivity() {
                         // Test tags show up as resource ids in uiautomator dumps, for the E2E checks.
                         .semantics { testTagsAsResourceId = true }
                         .weatherBackdrop(backdropState, MaterialTheme.colorScheme.background, darkTheme),
+                    // Transparent so the backdrop shows, so the text colour must be set rather than derived.
                     color = ComposeColor.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
                 ) {
-                    Scaffold(containerColor = ComposeColor.Transparent, bottomBar = {
+                    Scaffold(
+                        containerColor = ComposeColor.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        bottomBar = {
                         if (locationPermissionsGranted && appState.shouldShowBottomBar) {
                             VaneNavigationBar(appState)
                         }
