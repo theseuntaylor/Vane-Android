@@ -79,6 +79,8 @@ class WidgetWeatherRepository @Inject constructor(
                     weatherCode = response.current.weatherCode,
                     high = highAndLow?.first,
                     low = highAndLow?.second,
+                    latitude = location.latitude,
+                    longitude = location.longitude,
                 )
             }
         )

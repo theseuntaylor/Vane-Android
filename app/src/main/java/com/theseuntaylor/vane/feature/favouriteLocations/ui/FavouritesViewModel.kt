@@ -97,6 +97,8 @@ class FavouritesViewModel @Inject constructor(
                 weatherCode = forecast.current.weatherCode,
                 high = forecast.todayHighAndLow?.first,
                 low = forecast.todayHighAndLow?.second,
+                latitude = place.latitude,
+                longitude = place.longitude,
             )
         }
         // Widget caching must never break the Favourites tab.
