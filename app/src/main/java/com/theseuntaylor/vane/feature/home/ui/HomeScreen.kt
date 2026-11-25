@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.theseuntaylor.vane.R
+import com.theseuntaylor.vane.core.backdrop.ShowWeatherBackdrop
+import com.theseuntaylor.vane.core.backdrop.backdrop
 import com.theseuntaylor.vane.core.components.CityCard
 import com.theseuntaylor.vane.core.components.SectionMessage
 import com.theseuntaylor.vane.core.components.TopLoader
@@ -24,6 +26,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // The sky and light where the user is, behind the screen; plain while loading or on an error.
+    ShowWeatherBackdrop((uiState as? HomeUiState.Success)?.forecast?.backdrop())
 
     LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
