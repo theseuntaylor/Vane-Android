@@ -58,6 +58,9 @@ import com.theseuntaylor.vane.core.navigation.settingsScreen
 import com.theseuntaylor.vane.core.theme.isDark
 import com.theseuntaylor.vane.feature.favouriteLocations.ui.FavouritesViewModel
 import com.theseuntaylor.vane.feature.settings.data.AppearanceSettings
+import com.theseuntaylor.vane.feature.settings.data.UnitSettings
+import com.theseuntaylor.vane.core.units.LocalUnits
+import androidx.compose.runtime.CompositionLocalProvider
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -65,6 +68,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appearanceSettings: AppearanceSettings
+
+    @Inject
+    lateinit var unitSettings: UnitSettings
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,6 +115,7 @@ class MainActivity : ComponentActivity() {
             })
 
             val themeMode by appearanceSettings.themeMode.collectAsStateWithLifecycle()
+            val units by unitSettings.units.collectAsStateWithLifecycle()
             val darkTheme = themeMode.isDark()
 
             // The status and navigation bar icons follow the app's theme, not the system's.
@@ -120,7 +127,8 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
 
-            VaneTheme(darkTheme = darkTheme) {
+            // Units from Settings for every screen; values are converted only when shown.
+            VaneTheme(darkTheme = darkTheme) { CompositionLocalProvider(LocalUnits provides units) {
 
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
@@ -176,7 +184,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-            }
+            } }
         }
     }
 

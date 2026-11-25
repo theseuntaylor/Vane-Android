@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+/** Forecasts from Open-Meteo. Failures reach the collector, which decides what to show. */
 class WeatherForecastRepository @Inject constructor(
     private val networkDataSource: RemoteDataSource,
 ) {
@@ -15,17 +16,13 @@ class WeatherForecastRepository @Inject constructor(
         latitude: String,
         forecastDays: Int,
     ): Flow<WeatherForecastResponse> = flow {
-        try {
-            val weatherForecastResponse = networkDataSource.getWeatherForecast(
+        emit(
+            networkDataSource.getWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
-                forecastDays = forecastDays
+                forecastDays = forecastDays,
             )
-            emit(value = weatherForecastResponse)
-        } catch (e: Exception) {
-            e.localizedMessage
-            throw e
-        }
+        )
     }
 
     fun getFavouriteLocationsWeatherForecast(
@@ -33,23 +30,12 @@ class WeatherForecastRepository @Inject constructor(
         latitude: String,
         forecastDays: Int,
     ): Flow<List<WeatherForecastResponse>> = flow {
-        try {
-
-            val res = mutableListOf<WeatherForecastResponse>()
-
-            val weatherForecastResponse = networkDataSource.getFavouriteLocationsWeatherForecast(
+        emit(
+            networkDataSource.getFavouriteLocationsWeatherForecast(
                 longitude = longitude,
                 latitude = latitude,
-                forecastDays = forecastDays
+                forecastDays = forecastDays,
             )
-
-            res.addAll(weatherForecastResponse)
-
-            emit(value = res)
-
-        } catch (e: Exception) {
-            e.localizedMessage
-            throw e
-        }
+        )
     }
 }

@@ -16,7 +16,10 @@ import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.components.HourlyWeatherForecast
 import com.theseuntaylor.vane.core.components.WeatherDetailChip
 import com.theseuntaylor.vane.core.remote.model.WeatherForecastResponse
-import com.theseuntaylor.vane.core.utils.returnTime
+import com.theseuntaylor.vane.core.units.LocalUnits
+import com.theseuntaylor.vane.core.units.formatTime
+import com.theseuntaylor.vane.core.units.precipitationValue
+import com.theseuntaylor.vane.core.units.windSpeedValue
 
 /**
  * Today's hourly forecast and conditions for one place, as items of a [androidx.compose.foundation.lazy.LazyColumn].
@@ -38,11 +41,12 @@ fun LazyListScope.weatherDetailsItems(data: WeatherForecastResponse) {
                 )
             },
             right = {
+                val (precipitation, precipitationUnit) = LocalUnits.current.precipitationValue(data.daily.precipitation_sum[0])
                 WeatherDetailChip(
                     Modifier.fillMaxWidth(),
                     stringResource(R.string.precipitation),
-                    data.daily.precipitation_sum[0].toString(),
-                    data.dailyUnits.precipitation_sum,
+                    precipitation,
+                    precipitationUnit,
                     weatherDetailDescription = stringResource(R.string.precipitation_description)
                 )
             },
@@ -54,7 +58,7 @@ fun LazyListScope.weatherDetailsItems(data: WeatherForecastResponse) {
                 WeatherDetailChip(
                     Modifier.fillMaxWidth(),
                     stringResource(R.string.sun_rises_at),
-                    data.daily.sunrise[0].returnTime(),
+                    formatTime(data.daily.sunrise[0]),
                     "",
                     weatherDetailDescription = stringResource(R.string.sunrise_description)
                 )
@@ -63,7 +67,7 @@ fun LazyListScope.weatherDetailsItems(data: WeatherForecastResponse) {
                 WeatherDetailChip(
                     Modifier.fillMaxWidth(),
                     stringResource(R.string.sun_sets_at),
-                    data.daily.sunset[0].returnTime(),
+                    formatTime(data.daily.sunset[0]),
                     "",
                     weatherDetailDescription = stringResource(R.string.sunset_description)
                 )
@@ -95,11 +99,12 @@ fun LazyListScope.weatherDetailsItems(data: WeatherForecastResponse) {
     item {
         DetailRow(
             left = {
+                val (windSpeed, windSpeedUnit) = LocalUnits.current.windSpeedValue(data.current.wind_speed_10m)
                 WeatherDetailChip(
                     Modifier.fillMaxWidth(),
                     stringResource(R.string.wind_speed),
-                    data.current.wind_speed_10m.toString(),
-                    data.currentUnits.wind_speed_10m,
+                    windSpeed,
+                    windSpeedUnit,
                     weatherDetailDescription = stringResource(R.string.wind_speed_description)
                 )
             },

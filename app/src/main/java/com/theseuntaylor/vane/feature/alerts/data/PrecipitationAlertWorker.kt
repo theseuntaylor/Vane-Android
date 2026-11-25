@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -24,6 +25,8 @@ class PrecipitationAlertWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = try {
         repository.check()
         Result.success()
+    } catch (e: CancellationException) {
+        throw e // WorkManager stopped the job; it reschedules it itself
     } catch (e: Exception) {
         // No alert this time; a periodic run tries again in its next window.
         Log.e(TAG, "Rain and snow check failed", e)

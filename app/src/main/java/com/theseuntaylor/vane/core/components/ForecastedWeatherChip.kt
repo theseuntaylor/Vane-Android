@@ -12,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.theseuntaylor.vane.core.remote.model.Hourly
-import com.theseuntaylor.vane.core.utils.returnTime
-import kotlin.math.roundToInt
+import com.theseuntaylor.vane.core.units.formatTemperature
+import com.theseuntaylor.vane.core.units.formatTime
 
 @Composable
 fun HourlyWeatherForecast(hourly: Hourly) {
@@ -22,7 +22,7 @@ fun HourlyWeatherForecast(hourly: Hourly) {
     ) {
         items(24) { index ->
             ForecastedWeatherChip(
-                hourlyTime = hourly.time[index].returnTime(),
+                hourlyTime = formatTime(hourly.time[index]),
                 hourlyTemperature = hourly.temperature_2m[index]
             )
         }
@@ -39,7 +39,7 @@ private fun ForecastedWeatherChip(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = hourlyTime, style = MaterialTheme.typography.labelMedium)
-            Text(text = "${hourlyTemperature.roundToInt()}°", style = MaterialTheme.typography.titleMedium)
+            Text(text = formatTemperature(hourlyTemperature), style = MaterialTheme.typography.titleMedium)
         }
     }
 }

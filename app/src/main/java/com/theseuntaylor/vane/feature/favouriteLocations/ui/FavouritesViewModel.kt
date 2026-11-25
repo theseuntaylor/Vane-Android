@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theseuntaylor.vane.R
+import com.theseuntaylor.vane.core.utils.forecastErrorMessage
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
@@ -77,7 +78,7 @@ class FavouritesViewModel @Inject constructor(
             .onStart { _uiState.value = FavouritesUiState.Loading }
             .catch {
                 Log.e(TAG, "Couldn't load favourite forecasts", it)
-                _uiState.value = FavouritesUiState.Error(R.string.error_loading_forecasts)
+                _uiState.value = FavouritesUiState.Error(it.forecastErrorMessage())
             }
             .collect { response ->
                 _uiState.value = FavouritesUiState.Success(places.zip(response))

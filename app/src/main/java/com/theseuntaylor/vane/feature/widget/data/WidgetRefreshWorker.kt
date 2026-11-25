@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -24,6 +25,8 @@ class WidgetRefreshWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = try {
         repository.refresh()
         Result.success()
+    } catch (e: CancellationException) {
+        throw e // WorkManager stopped the job; it reschedules it itself
     } catch (e: Exception) {
         // The widget keeps showing the previous snapshot; try again on the next window.
         Log.e(TAG, "Widget refresh failed", e)

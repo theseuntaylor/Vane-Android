@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.Task
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.utils.findAddress
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -45,6 +46,8 @@ class CurrentLocationRepository @Inject constructor(
         val location = try {
             // The cached fix is instant; without one (e.g. right after a reboot), ask for a fresh one.
             lastLocation() ?: freshLocation()
+        } catch (e: CancellationException) {
+            throw e // the caller went away; not a failed lookup
         } catch (e: Exception) {
             Log.e(TAG, "Couldn't find the current location", e)
             null
