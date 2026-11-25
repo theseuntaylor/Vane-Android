@@ -268,7 +268,10 @@ private fun UpcomingHours(hours: List<HourlyTemperature>) {
                         text = LocalUnits.current.formatClockTime(
                             hour.hour,
                             DateFormat.is24HourFormat(LocalContext.current),
+                            // "2 PM", not "2:00 PM", which wraps onto two lines in a narrow widget.
+                            short = true,
                         ),
+                        maxLines = 1,
                         style = TextStyle(color = GlanceTheme.colors.onSecondaryContainer, fontSize = 12.sp),
                     )
                     // Snapshots saved before hourly codes were requested have no icon.
