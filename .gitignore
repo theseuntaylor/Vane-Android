@@ -27,3 +27,5 @@ design/node_modules/
 /.idea/*
 # Signed release bundles and R8 mappings that Android Studio writes when you build one by hand.
 /app/release/
+# Project instructions for Claude Code: kept locally, not in the repo.
+/CLAUDE.md
