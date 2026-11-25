@@ -36,6 +36,8 @@ fun CityCard(
     onCardItemClicked: (() -> Unit)? = null,
     name: String,
     uiModel: WeatherForecastUiModel = WeatherForecastUiModel(),
+    /** Shown after the temperature, e.g. a menu button. */
+    actions: (@Composable () -> Unit)? = null,
 ) {
     val current = uiModel.current
     val units = LocalUnits.current
@@ -76,6 +78,7 @@ fun CityCard(
                     text = formatTemperature(uiModel.current.temperature_2m),
                     style = MaterialTheme.typography.headlineMedium,
                 )
+                actions?.invoke()
             }
             Row(
                 modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
