@@ -1,0 +1,22 @@
+Vane is a simple, clear weather app. Open it and see the weather where you are, hour by hour, with no account to create and no ads.
+
+WEATHER WHERE YOU ARE
+• Today's temperature, the high and low, and a short summary of the conditions
+• An hourly forecast for the rest of the day
+• Today's details at a glance: UV index, precipitation, sunrise and sunset, pressure, wind speed and wind direction
+• Press and hold any detail for a plain-English explanation of what it means
+• Approximate location is enough
+
+RAIN AND SNOW ALERTS
+Turn on alerts in Settings and Vane sends you a notification about an hour before rain, snow or a thunderstorm starts where you last opened the app. You get one alert per spell of weather, not a stream of them.
+
+YOUR FAVOURITE PLACES
+Search for any town or city and save it. The Favourites tab shows the weather for every saved place, and you can tap one for its full forecast.
+
+A HOME SCREEN WIDGET
+Add the Vane widget to see the current weather, the next few hours and your favourites without opening the app. It keeps showing the last forecast when you're offline.
+
+LIGHT OR DARK
+Follow your phone's theme, or choose light or dark in Settings.
+
+Weather data by Open-Meteo.com.
