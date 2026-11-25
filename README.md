@@ -97,4 +97,6 @@ Set `APK=<path>` on the app scripts to test another build.
 
 ## Release
 
-Pushing a version tag such as `v1.2.0` runs `.github/workflows/release.yml`. It builds a signed bundle, uploads it to the Play internal track, and commits the new version to `master`. It needs these repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` and `SERVICE_ACCOUNT_JSON`.
+Pushing a version tag such as `v1.2.0` runs `.github/workflows/release.yml`. It builds a signed bundle, uploads it to the Play production track, and commits the new version to `master`. It needs these repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` and `SERVICE_ACCOUNT_JSON`.
+
+The Play store listing (title, descriptions and phone screenshots) lives in `fastlane/metadata/android/`. To update it, run the Store listing workflow by hand from the Actions tab: `validate` only asks Play to check it, and `upload` replaces the live listing.
