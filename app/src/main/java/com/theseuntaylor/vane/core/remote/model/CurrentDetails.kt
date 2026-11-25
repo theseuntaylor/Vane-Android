@@ -24,4 +24,6 @@ data class Current(
     @SerializedName("surface_pressure") val surfacePressure: Double = 0.0,
     @SerializedName("wind_direction_10m") val wind_direction_10m: Double = 0.0,
     @SerializedName("wind_gusts_10m") val wind_gusts_10m: Double = 0.0,
+    /** 1 while the sun is up at the place, 0 at night. Every request asks for it. */
+    @SerializedName("is_day") val isDay: Int = 1,
 )
