@@ -23,7 +23,4 @@ E2E check of the minified release build (signed with the local debug key): `scri
 E2E check that the release bundle is signed from `keystore.properties` (throwaway keystore): `scripts/e2e/release_signing.sh`.
 
 ## Release
-Pushing a tag such as `v1.2.0` runs `.github/workflows/release.yml`: it builds a signed bundle and uploads it to the Play internal track. The workflow sets `versionName` from the tag. If you bumped `versionName` to match the tag yourself, it keeps your `versionCode`; otherwise it uses master's `versionCode` plus one (`scripts/ci/resolve_version.sh`). After Play accepts the bundle it commits the version to `master` if `master` differs.
-
-## Store listing
-The Play listing text and phone screenshots live in `fastlane/metadata/android/en-GB/`. Retake the screenshots with `scripts/store/capture_screenshots.sh [emulator-serial]` after `./gradlew :app:assembleDebug` (it needs the emulator to itself), then check the listing with `scripts/e2e/store_listing.sh`. To publish, run the "Store listing" workflow by hand in GitHub Actions: `validate` first, then `upload`, which replaces the live listing.
+Pushing a tag such as `v1.2.0` runs `.github/workflows/release.yml`: it builds a signed bundle and uploads it to the Play production track, so every tag is a public release (subject to Google review). The workflow sets `versionName` from the tag. If you bumped `versionName` to match the tag yourself, it keeps your `versionCode`; otherwise it uses master's `versionCode` plus one (`scripts/ci/resolve_version.sh`). After Play accepts the bundle it commits the version to `master` if `master` differs.
