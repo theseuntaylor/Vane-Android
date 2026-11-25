@@ -17,6 +17,7 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
@@ -313,7 +314,11 @@ private fun FavouriteRow(context: Context, favourite: FavouriteWeather) {
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable(actionStartActivity<MainActivity>()),
+            // Opens this place's details; rows saved before coordinates were kept open the app.
+            .clickable(
+                WidgetLinks.openFavourite(context, favourite)?.let { actionStartActivity(it) }
+                    ?: actionStartActivity<MainActivity>()
+            ),
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
         WeatherIcon(favourite.weatherCode, 22.dp)
