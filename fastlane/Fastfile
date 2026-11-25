@@ -1,0 +1,27 @@
+default_platform(:android)
+
+platform :android do
+  # Only the listing text and phone screenshots in fastlane/metadata/android. Builds, release notes,
+  # the icon and the feature graphic on Play are left as they are.
+  def send_listing(validate_only)
+    upload_to_play_store(
+      validate_only: validate_only,
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true,
+      skip_upload_metadata: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Send the store listing to Google Play to be checked. Nothing on the store changes."
+  lane :validate_listing do
+    send_listing(true)
+  end
+
+  desc "Replace the store listing's title, descriptions and all phone screenshots."
+  lane :upload_listing do
+    send_listing(false)
+  end
+end
