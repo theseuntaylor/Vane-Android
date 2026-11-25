@@ -6,7 +6,7 @@ A weather app for Android. Vane shows the forecast where you are and for the pla
 
 - **Home:** the forecast at your location, with today's hourly forecast and conditions (wind, precipitation, UV index, pressure, sunrise and sunset).
 - **Favourites:** save other places and open a detailed forecast for each.
-- **Widget:** a home screen widget that refreshes in the background and still shows the last forecast offline.
+- **Widget:** a home screen widget that refreshes in the background and still shows the last forecast offline. Tapping a favourite on it opens that place's details.
 - **Rain and snow alerts:** a notification about an hour before rain or snow starts where you last opened Vane. Turn them on in Settings.
 - **Offline:** the last forecast stays on screen when you have no connection. If there's no saved forecast, Vane says you're offline.
 - **Settings:**
@@ -89,6 +89,7 @@ scripts/e2e/home_offline.sh emulator-5554
 | `units.sh` | Units chosen in Settings change Home and survive a restart |
 | `rain_alerts.sh` | Rain and snow alerts against canned forecasts |
 | `widget_offline.sh` | The widget with the app closed and offline |
+| `widget_favourite_tap.sh` | Tapping a favourite on the widget opens its details |
 | `release_smoke.sh` | The minified release build (after `./gradlew :app:assembleRelease`) |
 | `release_signing.sh` | The release bundle is signed from `keystore.properties` |
 | `daemon_toolchain.sh` | The build uses the daemon JDK whatever Java the shell has |
