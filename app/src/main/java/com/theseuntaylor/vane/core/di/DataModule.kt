@@ -3,6 +3,7 @@ package com.theseuntaylor.vane.core.di
 import android.content.Context
 import androidx.room.Room
 import com.theseuntaylor.vane.core.local.FavouriteLocationsDao
+import com.theseuntaylor.vane.core.local.MIGRATION_1_2
 import com.theseuntaylor.vane.core.local.VaneDatabase
 import dagger.Module
 import dagger.Provides
@@ -23,7 +24,7 @@ class DataModule {
             context.applicationContext,
             VaneDatabase::class.java,
             "vane.db"
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
     }
 
     @Provides
