@@ -8,6 +8,7 @@ A weather app for Android. Vane shows the forecast where you are and for the pla
 - **Favourites:** save other places and open a detailed forecast for each.
 - **Widget:** a home screen widget that refreshes in the background and still shows the last forecast offline.
 - **Rain and snow alerts:** a notification about an hour before rain or snow starts where you last opened Vane. Turn them on in Settings.
+- **Weather background:** Home and the details screen are tinted by the sky (clear, cloudy, fog, rain, snow or storm) and the light (day, dawn, dusk or night), blended into the light or dark theme.
 - **Offline:** the last forecast stays on screen when you have no connection. If there's no saved forecast, Vane says you're offline.
 - **Settings:**
   - Appearance: follow the system, or always light or dark.
@@ -86,6 +87,7 @@ scripts/e2e/home_offline.sh emulator-5554
 | `location_permission.sh` | Location permission denials, Settings and approximate location |
 | `navigation_appearance.sh` | Bottom navigation, and the light/dark setting surviving a restart |
 | `add_favourite.sh` | A new favourite shows at once and after a restart |
+| `weather_backdrop.sh` | Home's background matches the weather and time of day (checked against Open-Meteo) |
 | `units.sh` | Units chosen in Settings change Home and survive a restart |
 | `rain_alerts.sh` | Rain and snow alerts against canned forecasts |
 | `widget_offline.sh` | The widget with the app closed and offline |

@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.theseuntaylor.vane.core.backdrop.ShowWeatherBackdrop
+import com.theseuntaylor.vane.core.backdrop.backdrop
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,8 +38,11 @@ fun DetailedWeatherForecastScreen(
     val latitude = args.latitude
     val locationName = args.location
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // The place's sky and light, behind the screen.
+    ShowWeatherBackdrop((uiState as? DetailedWeatherForecastUiState.Success)?.data?.backdrop())
 
-    Scaffold(topBar = {
+    // Transparent, so the backdrop the app draws shows through.
+    Scaffold(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground, topBar = {
         VaneAppBar(title = locationName, navController = navController, navigateBack = {
             if (navController.previousBackStackEntry != null) {
                 navController.navigateUp()

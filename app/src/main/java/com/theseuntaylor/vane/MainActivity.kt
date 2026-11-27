@@ -61,8 +61,16 @@ import com.theseuntaylor.vane.feature.settings.data.AppearanceSettings
 import com.theseuntaylor.vane.feature.settings.data.UnitSettings
 import com.theseuntaylor.vane.core.units.LocalUnits
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import com.theseuntaylor.vane.core.backdrop.LocalWeatherBackdrop
+import com.theseuntaylor.vane.core.backdrop.WeatherBackdropState
+import com.theseuntaylor.vane.core.backdrop.weatherBackdrop
 import javax.inject.Inject
 
+@OptIn(ExperimentalComposeUiApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -128,7 +136,13 @@ class MainActivity : ComponentActivity() {
             }
 
             // Units from Settings for every screen; values are converted only when shown.
-            VaneTheme(darkTheme = darkTheme) { CompositionLocalProvider(LocalUnits provides units) {
+            // The weather behind the screen: Home and the details screen set it, other screens leave it plain.
+            val backdropState = remember { WeatherBackdropState() }
+
+            VaneTheme(darkTheme = darkTheme) { CompositionLocalProvider(
+                LocalUnits provides units,
+                LocalWeatherBackdrop provides backdropState,
+            ) {
 
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
@@ -137,9 +151,19 @@ class MainActivity : ComponentActivity() {
                 val modifier = Modifier
 
                 Surface(
-                    modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                    modifier = modifier
+                        .fillMaxSize()
+                        // Test tags show up as resource ids in uiautomator dumps, for the E2E checks.
+                        .semantics { testTagsAsResourceId = true }
+                        .weatherBackdrop(backdropState, MaterialTheme.colorScheme.background, darkTheme),
+                    // Transparent so the backdrop shows, so the text colour must be set rather than derived.
+                    color = ComposeColor.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
                 ) {
-                    Scaffold(bottomBar = {
+                    Scaffold(
+                        containerColor = ComposeColor.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        bottomBar = {
                         if (locationPermissionsGranted && appState.shouldShowBottomBar) {
                             VaneNavigationBar(appState)
                         }
