@@ -163,7 +163,7 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier
                                 ) {
                                     homeScreen()
-                                    favouritesScreen(navController, favouritesViewModel)
+                                    favouritesScreen(navController, favouritesViewModel, snackbarHostState)
                                     settingsScreen(navController)
                                     addLocationScreen(navController = navController)
                                     licencesScreen(navController)

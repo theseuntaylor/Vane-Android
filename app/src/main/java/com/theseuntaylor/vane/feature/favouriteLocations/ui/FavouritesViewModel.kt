@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.theseuntaylor.vane.R
 import com.theseuntaylor.vane.core.utils.forecastErrorMessage
 import com.theseuntaylor.vane.core.local.FavouriteLocationsEntity
+import com.theseuntaylor.vane.feature.favouriteLocations.domain.FavouritesUseCase
 import com.theseuntaylor.vane.feature.home.data.model.WeatherForecastUiModel
 import com.theseuntaylor.vane.feature.home.data.model.toUiModel
 import com.theseuntaylor.vane.feature.home.domain.GetWeatherForecastUseCase
@@ -30,6 +31,7 @@ import javax.inject.Inject
 class FavouritesViewModel @Inject constructor(
     private val weatherForecastUseCase: GetWeatherForecastUseCase,
     private val widgetWeatherRepository: WidgetWeatherRepository,
+    private val favouritesUseCase: FavouritesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<FavouritesUiState>(FavouritesUiState.Initial)
@@ -38,6 +40,10 @@ class FavouritesViewModel @Inject constructor(
     private var favouritesJob: Job? = null
     private var forecastsJob: Job? = null
 
+    // The last forecast for each place, by coordinates. Renaming, reordering, deleting or undoing a
+    // delete changes the list but not the places, so these are shown again without a request.
+    private val knownForecasts = mutableMapOf<Pair<Double, Double>, WeatherForecastUiModel>()
+
     init {
         loadFavourites()
     }
@@ -45,13 +51,20 @@ class FavouritesViewModel @Inject constructor(
     /** Reloads the saved places and their forecasts. Also used by the "Try again" button. */
     fun loadFavourites() {
         favouritesJob?.cancel()
+        knownForecasts.clear()
         // Room emits again whenever a favourite is added, so the list stays current without a restart.
         favouritesJob = viewModelScope.launch {
             weatherForecastUseCase.invokeGetFavouriteLocations().collect { places ->
                 // A newer list replaces any forecast request still running for the old one.
                 forecastsJob?.cancel()
+                val known = places.map { knownForecasts[it.coordinates] }
                 if (places.isEmpty()) {
                     _uiState.value = FavouritesUiState.Empty
+                    cacheFavouritesForWidget(emptyList(), emptyList())
+                } else if (known.all { it != null }) {
+                    val forecasts = known.filterNotNull()
+                    _uiState.value = FavouritesUiState.Success(places.zip(forecasts))
+                    cacheFavouritesForWidget(places, forecasts)
                 } else {
                     forecastsJob = loadForecasts(places)
                 }
@@ -81,9 +94,29 @@ class FavouritesViewModel @Inject constructor(
                 _uiState.value = FavouritesUiState.Error(it.forecastErrorMessage())
             }
             .collect { response ->
+                places.zip(response).forEach { (place, forecast) -> knownForecasts[place.coordinates] = forecast }
                 _uiState.value = FavouritesUiState.Success(places.zip(response))
                 cacheFavouritesForWidget(places, response)
             }
+    }
+
+    fun delete(place: FavouriteLocationsEntity) {
+        viewModelScope.launch { favouritesUseCase.delete(place) }
+    }
+
+    /** Undoes [delete]. */
+    fun restore(place: FavouriteLocationsEntity) {
+        viewModelScope.launch { favouritesUseCase.restore(place) }
+    }
+
+    fun rename(place: FavouriteLocationsEntity, name: String) {
+        viewModelScope.launch { favouritesUseCase.rename(place, name) }
+    }
+
+    /** Moves [place] one step up ([by] = -1) or down ([by] = 1) in the list shown. */
+    fun move(place: FavouriteLocationsEntity, by: Int) {
+        val shown = (_uiState.value as? FavouritesUiState.Success)?.places?.map { it.first } ?: return
+        viewModelScope.launch { favouritesUseCase.move(shown, place, by) }
     }
 
     private suspend fun cacheFavouritesForWidget(
@@ -104,5 +137,7 @@ class FavouritesViewModel @Inject constructor(
             .onFailure { e -> Log.e(TAG, "Couldn't update widget favourites", e) }
     }
 }
+
+private val FavouriteLocationsEntity.coordinates get() = latitude to longitude
 
 private const val TAG = "FavouritesViewModel"

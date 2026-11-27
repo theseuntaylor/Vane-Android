@@ -134,4 +134,16 @@
     <string name="clock_system">System</string>
     <string name="clock_12_hour">12-hour</string>
     <string name="clock_24_hour">24-hour</string>
+    <!-- Managing favourites -->
+    <string name="favourite_options">More options for %1$s</string>
+    <string name="favourite_rename">Rename</string>
+    <string name="favourite_move_up">Move up</string>
+    <string name="favourite_move_down">Move down</string>
+    <string name="favourite_delete">Delete</string>
+    <string name="favourite_rename_title">Rename place</string>
+    <string name="favourite_name_label">Name</string>
+    <string name="favourite_removed">Removed %1$s</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="undo">Undo</string>
 </resources>

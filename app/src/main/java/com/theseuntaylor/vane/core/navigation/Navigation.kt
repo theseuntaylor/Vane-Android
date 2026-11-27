@@ -24,10 +24,12 @@ fun NavGraphBuilder.homeScreen() {
 fun NavGraphBuilder.favouritesScreen(
     navController: NavController,
     favouritesViewModel: FavouritesViewModel,
+    snackbarHostState: SnackbarHostState,
 ) {
     composable<Favourites> {
         FavouritesScreen(
             viewModel = favouritesViewModel,
+            snackbarHostState = snackbarHostState,
             onAddPlace = { navController.navigate(AddFavouriteLocation) },
             onOpenPlace = { navController.navigate(it) },
         )
