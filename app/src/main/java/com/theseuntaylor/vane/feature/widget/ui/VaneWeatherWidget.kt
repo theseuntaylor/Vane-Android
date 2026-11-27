@@ -17,6 +17,7 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
@@ -267,7 +268,10 @@ private fun UpcomingHours(hours: List<HourlyTemperature>) {
                         text = LocalUnits.current.formatClockTime(
                             hour.hour,
                             DateFormat.is24HourFormat(LocalContext.current),
+                            // "2 PM", not "2:00 PM", which wraps onto two lines in a narrow widget.
+                            short = true,
                         ),
+                        maxLines = 1,
                         style = TextStyle(color = GlanceTheme.colors.onSecondaryContainer, fontSize = 12.sp),
                     )
                     // Snapshots saved before hourly codes were requested have no icon.
@@ -313,7 +317,11 @@ private fun FavouriteRow(context: Context, favourite: FavouriteWeather) {
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable(actionStartActivity<MainActivity>()),
+            // Opens this place's details; rows saved before coordinates were kept open the app.
+            .clickable(
+                WidgetLinks.openFavourite(context, favourite)?.let { actionStartActivity(it) }
+                    ?: actionStartActivity<MainActivity>()
+            ),
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
         WeatherIcon(favourite.weatherCode, 22.dp)

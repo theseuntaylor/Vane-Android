@@ -68,23 +68,36 @@ fun Units.formatTime(isoLocalDateTime: String, deviceUses24Hour: Boolean, locale
     return formatTime(time, deviceUses24Hour, locale)
 }
 
-/** A clock time saved as "HH:mm" (the widget's upcoming hours), formatted like [formatTime]. */
-fun Units.formatClockTime(hourMinute: String, deviceUses24Hour: Boolean, locale: Locale = Locale.getDefault()): String {
+/**
+ * A clock time saved as "HH:mm" (the widget's upcoming hours), formatted like [formatTime]. With
+ * [short], a 12-hour time on the hour leaves out the minutes ("2 PM"), so it fits a narrow slot.
+ */
+fun Units.formatClockTime(
+    hourMinute: String,
+    deviceUses24Hour: Boolean,
+    locale: Locale = Locale.getDefault(),
+    short: Boolean = false,
+): String {
     val time = try {
         LocalTime.parse(hourMinute)
     } catch (e: DateTimeParseException) {
         return hourMinute
     }
-    return formatTime(time, deviceUses24Hour, locale)
+    return formatTime(time, deviceUses24Hour, locale, short)
 }
 
-private fun Units.formatTime(time: LocalTime, deviceUses24Hour: Boolean, locale: Locale): String {
+private fun Units.formatTime(time: LocalTime, deviceUses24Hour: Boolean, locale: Locale, short: Boolean = false): String {
     val twentyFourHour = when (clock) {
         ClockFormat.SYSTEM -> deviceUses24Hour
         ClockFormat.TWELVE_HOUR -> false
         ClockFormat.TWENTY_FOUR_HOUR -> true
     }
-    return time.format(DateTimeFormatter.ofPattern(if (twentyFourHour) "HH:mm" else "h:mm a", locale))
+    val pattern = when {
+        twentyFourHour -> "HH:mm"
+        short && time.minute == 0 -> "h a"
+        else -> "h:mm a"
+    }
+    return time.format(DateTimeFormatter.ofPattern(pattern, locale))
 }
 
 private fun oneDecimal(value: Double) = String.format(Locale.getDefault(), "%.1f", value)

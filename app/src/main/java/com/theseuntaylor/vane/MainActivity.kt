@@ -59,6 +59,9 @@ import com.theseuntaylor.vane.core.theme.isDark
 import com.theseuntaylor.vane.feature.favouriteLocations.ui.FavouritesViewModel
 import com.theseuntaylor.vane.feature.settings.data.AppearanceSettings
 import com.theseuntaylor.vane.feature.settings.data.UnitSettings
+import com.theseuntaylor.vane.feature.widget.ui.WidgetLinks
+import com.theseuntaylor.vane.core.navigation.DetailedForecast
+import androidx.compose.runtime.LaunchedEffect
 import com.theseuntaylor.vane.core.units.LocalUnits
 import androidx.compose.runtime.CompositionLocalProvider
 import javax.inject.Inject
@@ -72,8 +75,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var unitSettings: UnitSettings
 
+    // A place's details to open, from a tap on the widget. Cleared once shown.
+    private var widgetDestination by mutableStateOf<DetailedForecast?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Only on a fresh start: after a rotation or process restore the details are already open.
+        if (savedInstanceState == null) widgetDestination = WidgetLinks.detailedForecast(intent)
         enableEdgeToEdge()
         setContent {
 
@@ -173,6 +181,13 @@ class MainActivity : ComponentActivity() {
                                         snackbarHostState = snackbarHostState
                                     )
                                 }
+                                // A widget tap opens the place on top of the Favourites tab, so Back lands there.
+                                LaunchedEffect(widgetDestination) {
+                                    val destination = widgetDestination ?: return@LaunchedEffect
+                                    appState.navigateToTopLevelDestination(TopLevelDestination.FAVOURITES)
+                                    navController.navigate(destination)
+                                    widgetDestination = null
+                                }
                             }
                         } else if (hasAskedForPermission) {
                             LocationPermissionScreen(
@@ -186,6 +201,11 @@ class MainActivity : ComponentActivity() {
                 }
             } }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        WidgetLinks.detailedForecast(intent)?.let { widgetDestination = it }
     }
 
     private fun openApplicationSettings() {

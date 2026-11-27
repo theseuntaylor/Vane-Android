@@ -32,6 +32,9 @@ data class FavouriteWeather(
     // Null in data saved before these were added, or when the forecast had no daily values.
     val high: Double? = null,
     val low: Double? = null,
+    // Null in data saved before these were added; tapping such a row opens the app's home.
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 @Serializable
